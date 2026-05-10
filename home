@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -47,11 +47,11 @@
             content: '';
             position: absolute;
             top: 50%;
+            border-radius: 50%;
             left: 50%;
             width: 8px;
             height: 8px;
             background: #b8d0ff;
-            border-radius: 50%;
             transform: translate(-50%, -50%);
             opacity: 0.8;
             box-shadow: 0 0 6px #c5d9ff;
@@ -125,21 +125,9 @@
         }
 
         @keyframes gentleBreathe {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-                text-shadow: 0 0 0px rgba(169,198,255,0);
-            }
-            50% {
-                transform: scale(1.02);
-                opacity: 0.95;
-                text-shadow: 0 0 6px rgba(169,198,255,0.4);
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-                text-shadow: 0 0 0px rgba(169,198,255,0);
-            }
+            0% {transform: scale(1); opacity: 1;}
+            50% {transform: scale(1.02); opacity: 0.95;}
+            100% {transform: scale(1); opacity: 1;}
         }
 
         .nav-links {
@@ -340,7 +328,6 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
-            transition: 0.2s;
             overflow: hidden;
         }
 
@@ -430,24 +417,14 @@
         }
 
         @media (max-width: 880px) {
-            .navbar {
-                flex-direction: column;
-            }
-            .hero h2 {
-                font-size: 2.4rem;
-            }
-            .container {
-                padding: 0 24px;
-            }
+            .navbar {flex-direction: column;}
+            .hero h2 {font-size: 2.4rem;}
+            .container {padding: 0 24px;}
         }
 
         @media (max-width: 640px) {
-            .cursor-follower {
-                display: none;
-            }
-            body, a, button {
-                cursor: auto;
-            }
+            .cursor-follower {display: none;}
+            body, a, button {cursor: auto;}
         }
     </style>
 </head>
@@ -490,7 +467,6 @@
                     </div>
                 </div>
                 <div class="hero-image soft-glow">
-                    <!-- 顶部升级超大高级轿车 SVG -->
                     <svg width="420" height="260" viewBox="0 0 480 280" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M80 120C80 95 110 80 170 80H310C370 80 400 95 400 120V180C400 205 370 220 310 220H170C110 220 80 205 80 180V120Z" fill="#F0F7FF" stroke="#b8d0ff" stroke-width="3" rx="28"/>
                         <circle cx="140" cy="210" r="32" fill="#1A4B6C" stroke="#c5d9ff" stroke-width="3"/>
@@ -508,8 +484,6 @@
                 <h2 class="section-title">Featured Electric Rides</h2>
                 <div class="section-sub">Zero compromise, zero emissions — handpicked sustainable choices</div>
                 <div class="card-grid">
-
-                    <!-- Tesla Model 3 专属 SVG -->
                     <div class="car-card">
                         <div class="card-img">
                             <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -531,7 +505,6 @@
                         <a href="#" class="card-link">View details →</a>
                     </div>
 
-                    <!-- Hyundai Ioniq 5 专属 SVG -->
                     <div class="car-card">
                         <div class="card-img">
                             <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -553,7 +526,6 @@
                         <a href="#" class="card-link">View details →</a>
                     </div>
 
-                    <!-- Ford Mustang Mach-E 专属 SVG -->
                     <div class="car-card">
                         <div class="card-img">
                             <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -574,7 +546,6 @@
                         <div class="price">$41,990</div>
                         <a href="#" class="card-link">View details →</a>
                     </div>
-
                 </div>
             </section>
 
