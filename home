@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>VanCar | 尊享认证新能源座驾</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none;
+        }
+
+        body,
+        a,
+        button,
+        input,
+        .card,
+        .nav-link,
+        .btn {
+            cursor: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #eef5ff 0%, #e1edff 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            color: #0a2a38;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Custom mouse follower (柔和蓝色光晕) */
+        .cursor-follower {
+            position: fixed;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(169, 198, 255, 0.45) 0%, rgba(197, 217, 255, 0.3) 60%, rgba(169, 198, 255, 0) 90%);
+            backdrop-filter: blur(2px);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.08s linear;
+            will-change: left, top;
+            mix-blend-mode: soft-light;
+            box-shadow: 0 0 12px rgba(169, 198, 255, 0.6);
+            border: 1px solid rgba(169, 198, 255, 0.5);
+        }
+
+        .cursor-follower::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: #b8d0ff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.8;
+            box-shadow: 0 0 6px #c5d9ff;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+            border-bottom: 1px solid rgba(169, 198, 255, 0.5);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, #c5d9ff, #a9c6ff);
+            width: 48px;
+            height: 48px;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 18px -8px rgba(169, 198, 255, 0.5);
+            transition: transform 0.25s ease;
+        }
+
+        .logo-icon svg {
+            width: 32px;
+            height: 32px;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+        }
+
+        .logo-text h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(120deg, #1a4970, #2b6a9e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: #3a6a85;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .breathing {
+            animation: gentleBreathe 3.2s infinite ease-in-out;
+            transform-origin: center;
+        }
+
+        @keyframes gentleBreathe {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+                text-shadow: 0 0 0px rgba(169, 198, 255, 0);
+            }
+
+            50% {
+                transform: scale(1.02);
+                opacity: 0.95;
+                text-shadow: 0 0 6px rgba(169, 198, 255, 0.4);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                text-shadow: 0 0 0px rgba(169, 198, 255, 0);
+            }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            font-weight: 600;
+            color: #174f6b;
+            transition: all 0.25s;
+            padding: 8px 6px;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: linear-gradient(90deg, #b8d0ff, #a9c6ff);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover:after {
+            width: 100%;
+        }
+
+        .nav-link:hover {
+            color: #1a5a82;
+            transform: translateY(-1px);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(105deg, #b8d0ff, #a9c6ff);
+            color: #133c55;
+            box-shadow: 0 6px 14px rgba(169, 198, 255, 0.45);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -8px rgba(169, 198, 255, 0.6);
+            background: linear-gradient(105deg, #a9c6ff, #9bb9f0);
+            color: #0f344c;
+        }
+
+        .btn-outline {
+            border: 2px solid #a9c6ff;
+            color: #1b5472;
+            background: rgba(169, 198, 255, 0.1);
+            backdrop-filter: blur(2px);
+        }
+
+        .btn-outline:hover {
+            background: rgba(169, 198, 255, 0.2);
+            border-color: #b8d0ff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(169, 198, 255, 0.3);
+            color: #10435e;
+        }
+
+        .hero {
+            padding: 60px 0 40px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .hero-content {
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .hero-badge {
+            background: rgba(197, 217, 255, 0.3);
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #1a6283;
+            margin-bottom: 20px;
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(169, 198, 255, 0.5);
+        }
+
+        .hero-content h2 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            background: linear-gradient(125deg, #0e405a, #266e94);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: #2d6d8c;
+            max-width: 550px;
+            margin-bottom: 32px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .hero-image {
+            flex: 0.8;
+            min-width: 260px;
+            text-align: center;
+            position: relative;
+        }
+
+        .soft-glow {
+            position: relative;
+        }
+
+        .soft-glow::before {
+            content: '';
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(169, 198, 255, 0.4), transparent 80%);
+            border-radius: 50%;
+            top: -30px;
+            right: -20px;
+            z-index: -1;
+            filter: blur(40px);
+        }
+
+        .featured {
+            padding: 60px 0 80px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #12445f;
+        }
+
+        .section-sub {
+            text-align: center;
+            color: #3d7897;
+            margin-bottom: 56px;
+            font-size: 1.1rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .car-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 32px;
+            padding: 24px;
+            transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(169, 198, 255, 0.3);
+            border: 1px solid rgba(255, 255, 245, 0.8);
+        }
+
+        .car-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 40px -18px rgba(169, 198, 255, 0.45), 0 0 0 2px rgba(169, 198, 255, 0.5);
+            background: #FFFFFF;
+        }
+
+        .card-img {
+            background: linear-gradient(145deg, #eef5ff, #e1edff);
+            border-radius: 28px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+        .car-card h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #0c3f58;
+        }
+
+        .car-details {
+            font-size: 0.85rem;
+            color: #54829b;
+            display: flex;
+            gap: 16px;
+            margin: 12px 0;
+            border-top: 1px solid #d9ecf5;
+            padding-top: 12px;
+        }
+
+        .price {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #1e729c;
+            margin: 12px 0;
+        }
+
+        .card-link {
+            display: inline-block;
+            font-weight: 600;
+            color: #3478b0;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .card-link:hover {
+            color: #1d6090;
+            letter-spacing: 0.3px;
+        }
+
+        .footer {
+            background: #0e2f3b;
+            color: #d9ecf2;
+            padding: 48px 0 32px;
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
+            margin-top: 20px;
+        }
+
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .footer-logo h3 {
+            font-size: 1.7rem;
+            color: #c0e4f2;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 48px;
+            flex-wrap: wrap;
+        }
+
+        .footer-col a {
+            display: block;
+            color: #b3d4e3;
+            text-decoration: none;
+            margin: 8px 0;
+            transition: 0.2s;
+        }
+
+        .footer-col a:hover {
+            color: #9bc0ff;
+            transform: translateX(4px);
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #2c596b;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 880px) {
+            .navbar {
+                flex-direction: column;
+            }
+
+            .hero h2 {
+                font-size: 2.4rem;
+            }
+
+            .container {
+                padding: 0 24px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .cursor-follower {
+                display: none;
+            }
+
+            body,
+            a,
+            button {
+                cursor: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cursor-follower" id="cursorFollower"></div>
+
+    <main>
+        <div class="container">
+            <!-- 导航栏 -->
+            <nav class="navbar">
+                <div class="logo-area breathing">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 2L6 12L9 22L16 28L23 22L26 12L16 2Z" fill="white" stroke="#a9c6ff"
+                                stroke-width="1.2" stroke-linejoin="round" />
+                            <path d="M20 15L14 19M12 14L18 10" stroke="#7fa5e0" stroke-width="1.5"
+                                stroke-linecap="round" />
+                            <circle cx="16" cy="16" r="3" fill="#8eb2ee" stroke="white" stroke-width="1" />
+                            <path d="M16 22 L16 28 M12 25 L20 25" stroke="#9bbcf5" stroke-width="1.2" />
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>VanCar</h1>
+                        <span>Electrified · Certified · Pre-owned</span>
+                    </div>
+                </div>
+                <div class="nav-links">
+                    <a href="#" class="nav-link">Home</a>
+                    <a href="#seller-section" class="nav-link" id="sellerLink">Sellers</a>
+                    <a href="#search-section" class="nav-link" id="searchLink">Search</a>
+                    <a href="#" class="nav-link">Inventory</a>
+                </div>
+            </nav>
+
+            <!-- Hero 主视觉 -->
+            <section class="hero">
+                <div class="hero-content">
+                    <div class="hero-badge">Blue Certified · Sustainable Drive</div>
+                    <h2>Drive the future,<br>sustainably.</h2>
+                    <p>VanCar offers a curated selection of hybrid & electric used cars. Every vehicle undergoes a
+                        rigorous 150-point eco-inspection. Quality driving with a smaller footprint.</p>
+                    <div class="hero-buttons">
+                        <a href="#search-feature" class="btn btn-primary" id="heroSearchBtn">Search Cars →</a>
+                        <a href="#seller-action" class="btn btn-outline" id="heroSellerBtn">Sell Your Car</a>
+                    </div>
+                </div>
+                <div class="hero-image soft-glow">
+                    <svg width="300" height="220" viewBox="0 0 380 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="30" y="90" width="300" height="100" rx="20" fill="#EEF5FF" stroke="#c5d9ff"
+                            stroke-width="2" />
+                        <circle cx="100" cy="180" r="28" fill="#235b78" stroke="#b8d0ff" stroke-width="2" />
+                        <circle cx="270" cy="180" r="28" fill="#235b78" stroke="#b8d0ff" stroke-width="2" />
+                        <path d="M120 130 L200 110 L260 130 L280 150 L240 165 L140 165 L100 150 L120 130Z"
+                            fill="#D6E5FF" stroke="#a9c6ff" stroke-width="1.5" />
+                        <rect x="150" y="115" width="50" height="20" rx="6" fill="#C5D9FF" />
+                        <path d="M70 150 L50 150 L45 135 L70 135 L70 150Z" fill="#B8D0FF" />
+                        <path d="M300 150 L320 150 L325 135 L300 135 L300 150Z" fill="#B8D0FF" />
+                    </svg>
+                </div>
+            </section>
+
+            <!-- 精选车型推荐 -->
+            <section class="featured">
+                <h2 class="section-title">Featured Electric Rides</h2>
+                <div class="section-sub">Zero compromise, zero emissions — handpicked sustainable choices</div>
+                <div class="card-grid">
+                    <!-- 卡片 1 -->
+                    <div class="car-card">
+                        <div class="card-img">
+                            <svg width="120" height="90" viewBox="0 0 120 70" fill="none">
+                                <rect x="10" y="20" width="100" height="35" rx="12" fill="#eef5ff" />
+                                <circle cx="35" cy="48" r="12" fill="#215e7c" stroke="#b8d0ff" stroke-width="1.2" />
+                                <circle cx="85" cy="48" r="12" fill="#215e7c" stroke="#b8d0ff" stroke-width="1.2" />
+                                <path d="M35 15 L70 15 L85 25 L95 35 L30 35 L20 25 L35 15Z" fill="#C5D9FF" />
+                            </svg>
+                        </div>
+                        <h3>Tesla Model 3</h3>
+                        <div class="car-details">
+                            <span>2022 · 28k mi</span>
+                            <span>Dual Motor</span>
+                        </div>
+                        <div class="price">$38,990</div>
+                        <a href="#" class="card-link">View details →</a>
+                    </div>
+                    <!-- 卡片 2 -->
+                    <div class="car-card">
+                        <div class="card-img">
+                            <svg width="120" height="90" viewBox="0 0 120 70" fill="none">
+                                <rect x="10" y="22" width="100" height="33" rx="14" fill="#e1edff" />
+                                <circle cx="34" cy="49" r="11" fill="#1d617f" stroke="#c5d9ff" stroke-width="1.2" />
+                                <circle cx="86" cy="49" r="11" fill="#1d617f" stroke="#c5d9ff" stroke-width="1.2" />
+                                <path d="M40 18 L68 18 L80 28 L95 32 L25 32 L35 24 L40 18Z" fill="#D6E5FF" />
+                            </svg>
+                        </div>
+                        <h3>Hyundai Ioniq 5</h3>
+                        <div class="car-details">
+                            <span>2023 · 15k mi</span>
+                            <span>Ultra-fast charge</span>
+                        </div>
+                        <div class="price">$42,495</div>
+                        <a href="#" class="card-link">View details →</a>
+                    </div>
+                    <!-- 卡片 3 -->
+                    <div class="car-card">
+                        <div class="card-img">
+                            <svg width="120" height="90" viewBox="0 0 120 70" fill="none">
+                                <rect x="12" y="23" width="96" height="32" rx="12" fill="#DEF0F9" />
+                                <circle cx="38" cy="48" r="11" fill="#1f6b8a" stroke="#b8d0ff" />
+                                <circle cx="82" cy="48" r="11" fill="#1f6b8a" stroke="#b8d0ff" />
+                                <path d="M44 19 L72 19 L82 29 L94 33 L26 33 L34 25 L44 19Z" fill="#C5D9FF" />
+                            </svg>
+                        </div>
+                        <h3>Ford Mustang Mach-E</h3>
+                        <div class="car-details">
+                            <span>2022 · 22k mi</span>
+                            <span>Extended Range</span>
+                        </div>
+                        <div class="price">$44,200</div>
+                        <a href="#" class="card-link">View details →</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 额外引导区域 (卖家/搜索入口) -->
+            <div style="display: flex; justify-content: center; gap: 32px; margin: 20px 0 60px;" id="seller-section"
+                class="extra-links">
+                <a href="#sell-page" class="btn btn-outline" id="sellerDirectBtn">Become a Seller →</a>
+                <a href="#search-page-link" class="btn btn-primary" id="searchDirectBtn">Advanced Search Inventory →</a>
+            </div>
+            <div style="text-align: center; margin-top: -30px; margin-bottom: 40px;">
+                <p style="color: #4c7e9b;">Trusted by 2,500+ green drivers | Over 300+ sustainable vehicles available
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-logo">
+                    <h3>VanCar</h3>
+                    <p style="margin-top: 12px;">Clean pre-owned cars.<br>For tomorrow's drive.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <strong>Explore</strong>
+                        <a href="#">Home</a>
+                        <a href="#" id="footerSeller">Sellers Hub</a>
+                        <a href="#" id="footerSearch">Search Cars</a>
+                    </div>
+                    <div class="footer-col">
+                        <strong>Support</strong>
+                        <a href="#">FAQ</a>
+                        <a href="#">Warranty</a>
+                        <a href="#">Contact</a>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 VanCar — Sustainable pre-owned electric & hybrid vehicles. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 自定义鼠标跟随 (柔和浅蓝效果)
+        const cursor = document.getElementById('cursorFollower');
+        if (cursor) {
+            let mouseX = 0, mouseY = 0;
+            let cursorX = 0, cursorY = 0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            function animateCursor() {
+                cursorX += (mouseX - cursorX) * 0.2;
+                cursorY += (mouseY - cursorY) * 0.2;
+                cursor.style.left = cursorX + 'px';
+                cursor.style.top = cursorY + 'px';
+                requestAnimationFrame(animateCursor);
+            }
+            animateCursor();
+
+            const interactiveElements = document.querySelectorAll('a, button, .car-card, .btn, .nav-link');
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.style.transform = 'translate(-50%, -50%) scale(1.35)';
+                    cursor.style.background = 'radial-gradient(circle, rgba(169,198,255,0.6) 0%, rgba(197,217,255,0.35) 70%)';
+                    cursor.style.backdropFilter = 'blur(4px)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursor.style.background = 'radial-gradient(circle, rgba(169,198,255,0.45) 0%, rgba(197,217,255,0.25) 60%, rgba(169,198,255,0) 90%)';
+                    cursor.style.backdropFilter = 'blur(2px)';
+                });
+            });
+        }
+
+        // 演示导航提示 (卖家/搜索页面)
+        function showDemoMessage(pageName) {
+            const toast = document.createElement('div');
+            toast.innerText = `${pageName} 页面即将开放 — 完整平台演示版。`;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '24px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.backgroundColor = '#0E2F3B';
+            toast.style.color = '#D3ECF5';
+            toast.style.padding = '12px 28px';
+            toast.style.borderRadius = '60px';
+            toast.style.fontSize = '0.9rem';
+            toast.style.fontWeight = '500';
+            toast.style.zIndex = '10000';
+            toast.style.backdropFilter = 'blur(12px)';
+            toast.style.background = 'rgba(14,47,59,0.92)';
+            toast.style.border = '1px solid #a9c6ff';
+            toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)';
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 2000);
+        }
+
+        const sellerLinks = document.querySelectorAll('#sellerLink, #heroSellerBtn, #sellerDirectBtn, #footerSeller');
+        const searchLinks = document.querySelectorAll('#searchLink, #heroSearchBtn, #searchDirectBtn, #footerSearch');
+
+        sellerLinks.forEach(link => {
+            if (link) {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showDemoMessage('卖家中心');
+                });
+            }
+        });
+        searchLinks.forEach(link => {
+            if (link) {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showDemoMessage('高级搜索');
+                });
+            }
+        });
+
+        const cardViewBtns = document.querySelectorAll('.card-link');
+        cardViewBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showDemoMessage('车辆详情');
+            });
+        });
+
+        // 氛围渐变移动 (采用指定浅蓝色系柔和过渡)
+        let lightShift = 0;
+        function ambientGlow() {
+            lightShift += 0.003;
+            const xPos = 35 + Math.sin(lightShift) * 12;
+            const yPos = 45 + Math.cos(lightShift * 0.7) * 15;
+            // 使用给定颜色 #eef5ff 和 #e1edff 作为主径向渐变核心，并混合 #d6e5ff 增加层次
+            document.body.style.background = `radial-gradient(circle at ${xPos}% ${yPos}%, #eef5ff, #e1edff, #d6e5ff)`;
+            requestAnimationFrame(ambientGlow);
+        }
+        ambientGlow();
+    </script>
+</body>
+
+</html>
