@@ -1,3 +1,32 @@
+<?php
+session_start();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once 'db_connection.php';
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
+
+    $stmt = $conn->prepare("SELECT seller_id, username, password FROM sellers WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows === 1) {
+        $stmt->bind_result($seller_id, $db_user, $hashed_pwd);
+        $stmt->fetch();
+        if (password_verify($password, $hashed_pwd)) {
+            $_SESSION['seller_id'] = $seller_id;
+            $_SESSION['username'] = $db_user;
+            header("Location: seller.php");
+            exit;
+        } else {
+            $error = "Incorrect password";
+        }
+    } else {
+        $error = "Username not found";
+    }
+    header("Location: login.php?error=" . urlencode($error));
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -191,7 +220,6 @@
             color: #0f344c;
         }
 
-        /* Login Section */
         .login-section {
             flex: 1;
             display: flex;
@@ -231,6 +259,17 @@
             color: #3d7897;
             font-size: 0.9rem;
             opacity: 0.9;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 40px;
+            background: rgba(255, 100, 100, 0.15);
+            color: #b13e3e;
+            border: 1px solid #ffa1a1;
+            font-size: 0.85rem;
         }
 
         .input-group {
@@ -460,7 +499,6 @@
 
     <main style="flex: 1; display: flex; flex-direction: column;">
         <div class="container">
-            <!--Navigation-->
             <nav class="navbar">
                 <div class="logo-area">
                     <div class="logo-icon">
@@ -479,22 +517,27 @@
                     </div>
                 </div>
                 <div class="nav-links">
-                    <a href="#" class="nav-link">Home</a>
-                    <a href="#" class="nav-link" id="demoSeller">Sellers</a>
-                    <a href="#" class="nav-link" id="demoSearch">Search</a>
-                    <a href="#" class="nav-link">Inventory</a>
+                    <a href="home.php" class="nav-link">Home</a>
+                    <a href="registration.php" class="nav-link">Registration</a>
                 </div>
             </nav>
         </div>
 
-        <!-- Login Section-->
+        <!-- Login Section -->
         <div class="login-section">
             <div class="glass-login-card">
                 <div class="login-header">
                     <h2>Welcome Back</h2>
                     <p>Sign in to access your dashboard</p>
                 </div>
-                <form id="loginForm" action="#" method="post">
+
+                <?php if (isset($_GET['error'])): ?>
+                <div class="error-message">
+                    <?php echo htmlspecialchars($_GET['error']); ?>
+                </div>
+                <?php endif; ?>
+
+                <form action="login.php" method="POST">
                     <div class="input-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" placeholder="Enter your username" required
@@ -513,13 +556,13 @@
                     </div>
                     <button type="submit" class="btn btn-primary login-btn">Log In →</button>
                     <div class="signup-text">
-                        Don't have an account?<a href="#" id="signupLink">Create account</a>
+                        Don't have an account?<a href="registration.php">Create account</a>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Footer  -->
+        <!-- Footer -->
         <footer class="footer">
             <div class="container">
                 <div class="footer-inner">
@@ -530,9 +573,8 @@
                     <div class="footer-links">
                         <div class="footer-col">
                             <strong>Explore</strong>
-                            <a href="#">Home</a>
-                            <a href="#" id="footerSellerDemo">Sellers Hub</a>
-                            <a href="#" id="footerSearchDemo">Search Cars</a>
+                            <a href="home.php">Home</a>
+                            <a href="registration.php">Registration</a>
                         </div>
                         <div class="footer-col">
                             <strong>Support</strong>
@@ -582,72 +624,6 @@
             });
         }
 
-        function showDemoMessage(pageName) {
-            const toast = document.createElement('div');
-            toast.innerText = `${pageName} — Demo version. Full platform in development.`;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '24px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = '#0E2F3B';
-            toast.style.color = '#E3F2F9';
-            toast.style.padding = '12px 28px';
-            toast.style.borderRadius = '60px';
-            toast.style.fontSize = '0.85rem';
-            toast.style.fontWeight = '500';
-            toast.style.zIndex = '10000';
-            toast.style.backdropFilter = 'blur(12px)';
-            toast.style.background = 'rgba(10,30,45,0.95)';
-            toast.style.border = '1px solid #a9c6ff';
-            toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
-            toast.style.fontFamily = "'Inter', system-ui, sans-serif";
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 2200);
-        }
-
-        const loginForm = document.getElementById('loginForm');
-        if (loginForm) {
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const username = document.getElementById('username').value.trim();
-                if (!username) {
-                    showDemoMessage('Login Demo: Please enter a username');
-                    return;
-                }
-                showDemoMessage(`Welcome ${username} (Demo Login)`);
-            });
-        }
-
-        const sellerDemoBtns = document.querySelectorAll('#demoSeller, #footerSellerDemo');
-        const searchDemoBtns = document.querySelectorAll('#demoSearch, #footerSearchDemo');
-        const signupDemo = document.getElementById('signupLink');
-        const forgotDemo = document.querySelector('.forgot-link');
-
-        sellerDemoBtns.forEach(btn => {
-            if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Seller Portal'); });
-        });
-        searchDemoBtns.forEach(btn => {
-            if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Advanced Search'); });
-        });
-        if (signupDemo) {
-            signupDemo.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Account Registration'); });
-        }
-        if (forgotDemo) {
-            forgotDemo.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Password Recovery'); });
-        }
-
-        const homeLinks = document.querySelectorAll('.nav-link:first-child, .footer-col a[href="#"]:not(#footerSellerDemo):not(#footerSearchDemo)');
-        homeLinks.forEach(link => {
-            if (link && link.innerText !== 'Sellers' && link.innerText !== 'Search' && link.innerText !== 'Sellers Hub' && link.innerText !== 'Search Cars') {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showDemoMessage('Home / Inventory');
-                });
-            }
-        });
-        const inventoryLink = Array.from(document.querySelectorAll('.nav-link')).find(link => link.innerText === 'Inventory');
-        if (inventoryLink) inventoryLink.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Vehicle Inventory'); });
-
         let lightShift = 0;
         function ambientGlow() {
             lightShift += 0.003;
@@ -657,6 +633,14 @@
             requestAnimationFrame(ambientGlow);
         }
         ambientGlow();
+
+        const forgotLink = document.querySelector('.forgot-link');
+        if (forgotLink) {
+            forgotLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('Password recovery demo. Please contact support.');
+            });
+        }
     </script>
 </body>
 
