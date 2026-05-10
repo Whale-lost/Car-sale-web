@@ -617,7 +617,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="home.php" class="nav-link">Home</a>
                     <a href="seller.php" class="nav-link">Sellers</a>
                     <a href="search.php" class="nav-link">Search</a>
-                    <a href="inventory.php" class="nav-link">Inventory</a>
                 </div>
             </nav>
         </div>
@@ -629,7 +628,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p>Fill in the details to list your EV on VanCar</p>
                 </div>
 
-                <!-- Display messages -->
                 <?php if (!empty($error_message)): ?>
                 <div class="message error-msg">
                     <?php echo htmlspecialchars($error_message); ?>
@@ -644,18 +642,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form id="addCarForm" action="<?php echo htmlspecialchars($_SERVER[" PHP_SELF"]); ?>" method="POST"
                     enctype="multipart/form-data">
                     <div class="form-grid">
-                        <!-- Colour -->
                         <div class="input-group">
                             <label>Colour</label>
                             <input type="text" id="colour" name="colour" placeholder="e.g., Aurora Silver" required>
                         </div>
-                        <!-- Model -->
                         <div class="input-group">
                             <label>Model</label>
                             <input type="text" id="model" name="model" placeholder="Tesla Model 3, BYD Seal..."
                                 required>
                         </div>
-                        <!-- Year -->
                         <div class="input-group">
                             <label>Year</label>
                             <select id="year" name="year" required>
@@ -670,13 +665,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <option>2018</option>
                             </select>
                         </div>
-                        <!-- Location -->
                         <div class="input-group">
                             <label>Location</label>
                             <input type="text" id="location" name="location"
                                 placeholder="City / Dealership (e.g., Shanghai)" required>
                         </div>
-                        <!-- Price (USD) -->
                         <div class="input-group">
                             <label>Price (USD)</label>
                             <input type="number" id="price" name="price" placeholder="e.g., 35990" required step="1">
@@ -712,7 +705,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <!-- Footer -->
         <footer class="footer">
             <div class="container">
                 <div class="footer-inner">
@@ -818,7 +810,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <? php endif; ?>
     </script>
 </body>
-
-</html>
 
 </html>
