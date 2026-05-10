@@ -1,3 +1,58 @@
+<?php
+
+session_start();
+
+if (!isset($_SESSION['seller_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+require_once 'db_connection.php';
+
+$error_message = '';
+$success_message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $colour = trim($_POST['colour']);
+    $model = trim($_POST['model']);
+    $year = intval($_POST['year']);
+    $location = trim($_POST['location']);
+    $price = floatval($_POST['price']);
+    $seller_id = $_SESSION['seller_id'];
+
+    $target_dir = "uploads/";
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
+
+    $file_name = time() . "_" . basename($_FILES["car_image"]["name"]);
+    $target_file = $target_dir . $file_name;
+    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+    $check = getimagesize($_FILES["car_image"]["tmp_name"]);
+    if ($check === false) {
+        $error_message = "File is not a valid image";
+    } elseif ($_FILES["car_image"]["size"] > 2 * 1024 * 1024) {
+        $error_message = "Image exceeds 2MB limit";
+    } elseif (!in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
+        $error_message = "Only JPG, JPEG, PNG, GIF allowed";
+    } else {
+        if (move_uploaded_file($_FILES["car_image"]["tmp_name"], $target_file)) {
+            $stmt = $conn->prepare("INSERT INTO cars (seller_id, colour, model, year, location, price, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("issisds", $seller_id, $colour, $model, $year, $location, $price, $target_file);
+            if ($stmt->execute()) {
+                $success_message = "Car posted successfully!";
+            } else {
+                $error_message = "Database save failed: " . $stmt->error;
+            }
+            $stmt->close();
+        } else {
+            $error_message = "Image upload failed";
+        }
+    }
+    $conn->close();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -512,6 +567,26 @@
                 transform: translateY(0);
             }
         }
+
+        .message {
+            text-align: center;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+
+        .error-msg {
+            background: rgba(255, 100, 100, 0.15);
+            color: #b13e3e;
+            border: 1px solid #ffa1a1;
+        }
+
+        .success-msg {
+            background: rgba(100, 200, 100, 0.15);
+            color: #2c6e2c;
+            border: 1px solid #8bc88b;
+        }
     </style>
 </head>
 
@@ -521,7 +596,6 @@
 
     <main style="flex: 1; display: flex; flex-direction: column;">
         <div class="container">
-            <!-- Navigation Bar -->
             <nav class="navbar">
                 <div class="logo-area">
                     <div class="logo-icon">
@@ -540,10 +614,10 @@
                     </div>
                 </div>
                 <div class="nav-links">
-                    <a href="#" class="nav-link">Home</a>
-                    <a href="#" class="nav-link" id="demoSeller">Sellers</a>
-                    <a href="#" class="nav-link" id="demoSearch">Search</a>
-                    <a href="#" class="nav-link">Inventory</a>
+                    <a href="home.php" class="nav-link">Home</a>
+                    <a href="seller.php" class="nav-link">Sellers</a>
+                    <a href="search.php" class="nav-link">Search</a>
+                    <a href="inventory.php" class="nav-link">Inventory</a>
                 </div>
             </nav>
         </div>
@@ -555,7 +629,20 @@
                     <p>Fill in the details to list your EV on VanCar</p>
                 </div>
 
-                <form id="addCarForm" action="#" method="post" enctype="multipart/form-data">
+                <!-- Display messages -->
+                <?php if (!empty($error_message)): ?>
+                <div class="message error-msg">
+                    <?php echo htmlspecialchars($error_message); ?>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($success_message)): ?>
+                <div class="message success-msg">
+                    <?php echo htmlspecialchars($success_message); ?>
+                </div>
+                <?php endif; ?>
+
+                <form id="addCarForm" action="<?php echo htmlspecialchars($_SERVER[" PHP_SELF"]); ?>" method="POST"
+                    enctype="multipart/form-data">
                     <div class="form-grid">
                         <!-- Colour -->
                         <div class="input-group">
@@ -589,12 +676,11 @@
                             <input type="text" id="location" name="location"
                                 placeholder="City / Dealership (e.g., Shanghai)" required>
                         </div>
-                        <!-- Price -->
+                        <!-- Price (USD) -->
                         <div class="input-group">
                             <label>Price (USD)</label>
                             <input type="number" id="price" name="price" placeholder="e.g., 35990" required step="1">
                         </div>
-                        <!-- Image Upload -->
                         <div class="input-group full-width">
                             <label>Car Image</label>
                             <div class="image-upload-area">
@@ -609,11 +695,12 @@
                                                 <path d="M21 15L16 10L5 21" stroke="currentColor"
                                                     stroke-linecap="round" />
                                             </svg>
-                                            <span>JPEG, PNG, WebP (Max 5MB)</span>
+                                            <span>JPEG, PNG, GIF (Max 2MB)</span>
                                         </div>
                                     </div>
                                     <label for="carImageInput" class="upload-label">Choose Image</label>
-                                    <input type="file" id="carImageInput" accept="image/jpeg, image/png, image/webp">
+                                    <input type="file" id="carImageInput" name="car_image"
+                                        accept="image/jpeg, image/png, image/gif">
                                 </div>
                             </div>
                         </div>
@@ -636,9 +723,9 @@
                     <div class="footer-links">
                         <div class="footer-col">
                             <strong>Explore</strong>
-                            <a href="#">Home</a>
-                            <a href="#" id="footerSellerDemo">Sellers Hub</a>
-                            <a href="#" id="footerSearchDemo">Search Cars</a>
+                            <a href="home.php">Home</a>
+                            <a href="seller.php">Sellers Hub</a>
+                            <a href="search.php">Search Cars</a>
                         </div>
                         <div class="footer-col">
                             <strong>Support</strong>
@@ -695,8 +782,8 @@
         fileInput.addEventListener('change', function (event) {
             const file = event.target.files[0];
             if (file) {
-                if (file.size > 5 * 1024 * 1024) {
-                    showDemoMessage('Image must be less than 5MB');
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Image must be less than 2MB');
                     fileInput.value = '';
                     return;
                 }
@@ -714,74 +801,6 @@
             }
         });
 
-        const addForm = document.getElementById('addCarForm');
-        addForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const colour = document.getElementById('colour').value.trim();
-            const model = document.getElementById('model').value.trim();
-            const year = document.getElementById('year').value;
-            const location = document.getElementById('location').value.trim();
-            const price = document.getElementById('price').value.trim();
-            const hasImage = fileInput.files.length > 0;
-
-            if (!colour || !model || !year || !location || !price) {
-                showDemoMessage('Please complete all fields');
-                return;
-            }
-            if (!hasImage) {
-                showDemoMessage('Please upload a car image');
-                return;
-            }
-
-            showDemoMessage(`Vehicle added: ${model} (${year}) | ${colour} | $${price} — Demo mode`);
-        });
-
-        function showDemoMessage(msg) {
-            const toast = document.createElement('div');
-            toast.innerText = msg;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '24px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = '#0E2F3B';
-            toast.style.color = '#D3ECF5';
-            toast.style.padding = '12px 28px';
-            toast.style.borderRadius = '60px';
-            toast.style.fontSize = '0.9rem';
-            toast.style.fontWeight = '500';
-            toast.style.zIndex = '10000';
-            toast.style.backdropFilter = 'blur(12px)';
-            toast.style.background = 'rgba(14,47,59,0.92)';
-            toast.style.border = '1px solid #a9c6ff';
-            toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.2)';
-            toast.style.fontFamily = "'Inter', system-ui, sans-serif";
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
-            }, 2500);
-        }
-
-        const sellerBtns = document.querySelectorAll('#demoSeller, #footerSellerDemo');
-        const searchBtns = document.querySelectorAll('#demoSearch, #footerSearchDemo');
-        sellerBtns.forEach(btn => {
-            if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Seller Portal (Demo)'); });
-        });
-        searchBtns.forEach(btn => {
-            if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Advanced Search (Demo)'); });
-        });
-        const otherNavs = document.querySelectorAll('.nav-link:first-child, .nav-link:last-child, .footer-col a[href="#"]:not(#footerSellerDemo):not(#footerSearchDemo)');
-        otherNavs.forEach(link => {
-            if (link && link.innerText !== 'Sellers' && link.innerText !== 'Search' && link.innerText !== 'Sellers Hub' && link.innerText !== 'Search Cars') {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showDemoMessage('Navigation Demo - VanCar Platform');
-                });
-            }
-        });
-        const inventoryNav = Array.from(document.querySelectorAll('.nav-link')).find(link => link.innerText === 'Inventory');
-        if (inventoryNav) inventoryNav.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Vehicle Inventory (Demo)'); });
-
         let lightShift = 0;
         function ambientGlow() {
             lightShift += 0.003;
@@ -791,7 +810,15 @@
             requestAnimationFrame(ambientGlow);
         }
         ambientGlow();
+
+        <? php if (!empty($success_message)): ?>
+            setTimeout(function () {
+                window.location.href = "seller.php";
+            }, 2000);
+        <? php endif; ?>
     </script>
 </body>
+
+</html>
 
 </html>
