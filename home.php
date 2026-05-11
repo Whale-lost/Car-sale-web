@@ -2,7 +2,6 @@
 session_start();
 require_once 'db_connection.php';
 
-// Fetch 3 random cars from database
 $random_cars = [];
 $sql = "SELECT car_id, model, year, colour, location, price, image FROM cars ORDER BY RAND() LIMIT 3";
 $result = $conn->query($sql);
@@ -104,7 +103,7 @@ $conn->close();
             border-bottom: 1px solid rgba(169, 198, 255, 0.35);
             position: sticky;
             top: 0;
-            background: #ffffff;  /* 纯白色背景 */
+            background: #ffffff;
             z-index: 999;
             transition: all 0.3s ease;
         }
@@ -713,7 +712,6 @@ $conn->close();
                                     <?php if (!empty($car['image']) && file_exists($car['image'])): ?>
                                         <img src="<?php echo htmlspecialchars($car['image']); ?>" alt="<?php echo htmlspecialchars($car['model']); ?>" style="width:100%; height:100%; object-fit:cover;">
                                     <?php else: ?>
-                                        <!-- 占位 SVG（与原卡片样式保持一致） -->
                                         <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M30 60C30 40 60 30 100 30H170C190 30 200 50 200 65V85C200 100 180 105 140 105H60C20 105 20 85 20 70V60" fill="#ffffff" stroke="#222222" stroke-width="2" rx="16"/>
                                             <path d="M50 45 L150 45" stroke="#0071E3" stroke-width="2.5" stroke-linecap="round"/>
