@@ -647,21 +647,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="input-group">
                             <label>Model</label>
-                            <input type="text" id="model" name="model" placeholder="Tesla Model 3, BYD Seal..."
-                                required>
+                            <input type="text" id="model" name="model" placeholder="Tesla Model 3, BYD Seal..." required>
                         </div>
                         <div class="input-group">
                             <label>Year</label>
                             <select id="year" name="year" required>
                                 <option value="">Select year</option>
-                                <option>2025</option>
-                                <option>2024</option>
-                                <option>2023</option>
-                                <option>2022</option>
-                                <option>2021</option>
-                                <option>2020</option>
-                                <option>2019</option>
-                                <option>2018</option>
+                                <?php
+                                $currentYear = date('Y');
+                                for ($y = 1990; $y <= $currentYear + 2; $y++) {
+                                    echo "<option value=\"$y\">$y</option>";
+                                }
+                                ?>
                             </select>
                         </div>
                         <div class="input-group">
