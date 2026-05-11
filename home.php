@@ -1,5 +1,17 @@
 <?php
 session_start();
+require_once 'db_connection.php';
+
+// Fetch 3 random cars from database
+$random_cars = [];
+$sql = "SELECT car_id, model, year, colour, location, price, image FROM cars ORDER BY RAND() LIMIT 3";
+$result = $conn->query($sql);
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $random_cars[] = $row;
+    }
+}
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -92,8 +104,7 @@ session_start();
             border-bottom: 1px solid rgba(169, 198, 255, 0.35);
             position: sticky;
             top: 0;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
+            background: #ffffff;  /* 纯白色背景 */
             z-index: 999;
             transition: all 0.3s ease;
         }
@@ -695,77 +706,37 @@ session_start();
                 <h2 class="section-title">Featured Electric Rides</h2>
                 <div class="section-sub">Zero compromise, zero emissions — handpicked sustainable choices</div>
                 <div class="card-grid">
-                    <div class="car-card">
-                        <div class="card-img">
-                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M30 60C30 40 60 30 100 30H170C190 30 200 50 200 65V85C200 100 180 105 140 105H60C20 105 20 85 20 70V60"
-                                    fill="#ffffff" stroke="#222222" stroke-width="2" rx="16" />
-                                <path d="M50 45 L150 45" stroke="#0071E3" stroke-width="2.5" stroke-linecap="round" />
-                                <path d="M60 70 L140 70" stroke="#E5E5E5" stroke-width="1.5" />
-                                <circle cx="65" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5" />
-                                <circle cx="135" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5" />
-                                <path d="M40 75 H45" stroke="#0071E3" stroke-width="1.5" />
-                                <path d="M155 75 H160" stroke="#0071E3" stroke-width="1.5" />
-                            </svg>
-                        </div>
-                        <h3>Tesla Model 3</h3>
-                        <div class="car-details">
-                            <span>2023 · 28,500 mi</span>
-                            <span>Dual Motor AWD</span>
-                        </div>
-                        <div class="price">$36,990</div>
-                        <a href="#" class="card-link">View details →</a>
-                    </div>
-
-                    <div class="car-card">
-                        <div class="card-img">
-                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M40 55C40 40 70 35 100 35H160C180 35 190 55 190 65V85C190 100 170 105 130 105H70C30 105 30 80 30 65V55"
-                                    fill="#EEF4FF" stroke="#3B6A9C" stroke-width="2" rx="8" />
-                                <rect x="70" y="42" width="60" height="10" rx="5" fill="#5FB0FF" />
-                                <path d="M50 70 L150 70" stroke="#3B6A9C" stroke-width="1.5" />
-                                <circle cx="65" cy="100" r="17" fill="#254662" stroke="#a9c6ff" stroke-width="1.5" />
-                                <circle cx="135" cy="100" r="17" fill="#254662" stroke="#a9c6ff" stroke-width="1.5" />
-                                <path d="M42 75 H48" stroke="#5FB0FF" stroke-width="1.5" />
-                                <path d="M152 75 H158" stroke="#5FB0FF" stroke-width="1.5" />
-                            </svg>
-                        </div>
-                        <h3>Hyundai Ioniq 5</h3>
-                        <div class="car-details">
-                            <span>2024 · 12,300 mi</span>
-                            <span>Limited AWD</span>
-                        </div>
-                        <div class="price">$39,490</div>
-                        <a href="#" class="card-link">View details →</a>
-                    </div>
-
-                    <div class="car-card">
-                        <div class="card-img">
-                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M35 58C35 40 65 35 95 35H165C185 35 195 55 195 70V88C195 102 175 105 145 105H55C25 105 25 82 25 68V58"
-                                    fill="#E6F0FF" stroke="#2D4A66" stroke-width="2" rx="14" />
-                                <path d="M60 48 L140 48" stroke="#2D4A66" stroke-width="2.5" />
-                                <path d="M55 68 L145 68" stroke="#006FBA" stroke-width="1.5" />
-                                <circle cx="60" cy="100" r="18" fill="#1E344D" stroke="#a9c6ff" stroke-width="1.5" />
-                                <circle cx="140" cy="100" r="18" fill="#1E344D" stroke="#a9c6ff" stroke-width="1.5" />
-                                <path d="M40 75 H46" stroke="#006FBA" stroke-width="1.5" />
-                                <path d="M154 75 H160" stroke="#006FBA" stroke-width="1.5" />
-                            </svg>
-                        </div>
-                        <h3>Ford Mustang Mach-E</h3>
-                        <div class="car-details">
-                            <span>2023 · 19,800 mi</span>
-                            <span>Premium ER AWD</span>
-                        </div>
-                        <div class="price">$41,990</div>
-                        <a href="#" class="card-link">View details →</a>
-                    </div>
+                    <?php if (count($random_cars) > 0): ?>
+                        <?php foreach ($random_cars as $car): ?>
+                            <div class="car-card">
+                                <div class="card-img">
+                                    <?php if (!empty($car['image']) && file_exists($car['image'])): ?>
+                                        <img src="<?php echo htmlspecialchars($car['image']); ?>" alt="<?php echo htmlspecialchars($car['model']); ?>" style="width:100%; height:100%; object-fit:cover;">
+                                    <?php else: ?>
+                                        <!-- 占位 SVG（与原卡片样式保持一致） -->
+                                        <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M30 60C30 40 60 30 100 30H170C190 30 200 50 200 65V85C200 100 180 105 140 105H60C20 105 20 85 20 70V60" fill="#ffffff" stroke="#222222" stroke-width="2" rx="16"/>
+                                            <path d="M50 45 L150 45" stroke="#0071E3" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M60 70 L140 70" stroke="#E5E5E5" stroke-width="1.5"/>
+                                            <circle cx="65" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5"/>
+                                            <circle cx="135" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5"/>
+                                            <path d="M40 75 H45" stroke="#0071E3" stroke-width="1.5"/>
+                                            <path d="M155 75 H160" stroke="#0071E3" stroke-width="1.5"/>
+                                        </svg>
+                                    <?php endif; ?>
+                                </div>
+                                <h3><?php echo htmlspecialchars($car['model']); ?></h3>
+                                <div class="car-details">
+                                    <span><?php echo htmlspecialchars($car['year']); ?> · <?php echo htmlspecialchars($car['colour']); ?></span>
+                                    <span><?php echo htmlspecialchars($car['location']); ?></span>
+                                </div>
+                                <div class="price">$<?php echo number_format($car['price'], 2); ?></div>
+                                <a href="#" class="card-link">View details →</a>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p style="text-align:center; grid-column:1/-1; color:#54829b;">No cars available at the moment. Please check back later.</p>
+                    <?php endif; ?>
                 </div>
             </section>
 
