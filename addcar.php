@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 if (!isset($_SESSION['seller_id'])) {
@@ -47,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $stmt->close();
         } else {
-            $error_message = "Image upload failed";
+            $error_message = "Image upload failed. Check folder permissions.";
         }
     }
     $conn->close();
@@ -639,7 +638,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <?php endif; ?>
 
-                <form id="addCarForm" action="<?php echo htmlspecialchars($_SERVER[" PHP_SELF"]); ?>" method="POST"
+                <form id="addCarForm" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST"
                     enctype="multipart/form-data">
                     <div class="form-grid">
                         <div class="input-group">
@@ -803,11 +802,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         ambientGlow();
 
-        <? php if (!empty($success_message)): ?>
+        <?php if (!empty($success_message)): ?>
             setTimeout(function () {
                 window.location.href = "seller.php";
             }, 2000);
-        <? php endif; ?>
+        <?php endif; ?>
     </script>
 </body>
 
