@@ -580,13 +580,13 @@ $my_cars = $result->fetch_all(MYSQLI_ASSOC);
                                 <?php echo htmlspecialchars($car['model']); ?>
                             </h3>
                             <div class="car-meta">
-                                <span>📍
+                                <span>
                                     <?php echo htmlspecialchars($car['location']); ?>
                                 </span>
-                                <span>📅
+                                <span>
                                     <?php echo $car['year']; ?>
                                 </span>
-                                <span>🎨
+                                <span>
                                     <?php echo htmlspecialchars($car['colour']); ?>
                                 </span>
                             </div>
