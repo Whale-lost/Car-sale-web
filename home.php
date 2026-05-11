@@ -1,5 +1,9 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -25,9 +29,17 @@
         }
 
         @keyframes bgShift {
-            0% { background-position: 0% 0%; }
-            50% { background-position: 10% 15%; }
-            100% { background-position: 0% 0%; }
+            0% {
+                background-position: 0% 0%;
+            }
+
+            50% {
+                background-position: 10% 15%;
+            }
+
+            100% {
+                background-position: 0% 0%;
+            }
         }
 
         .cursor-follower {
@@ -35,15 +47,15 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(169,198,255,0.5) 0%, rgba(197,217,255,0.35) 70%, transparent 100%);
+            background: radial-gradient(circle, rgba(169, 198, 255, 0.5) 0%, rgba(197, 217, 255, 0.35) 70%, transparent 100%);
             backdrop-filter: blur(3px);
             pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
             transition: transform 0.07s linear;
             will-change: left, top;
-            box-shadow: 0 0 18px rgba(169,198,255,0.6);
-            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 0 18px rgba(169, 198, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .cursor-follower::after {
@@ -77,10 +89,10 @@
             padding: 24px 0;
             flex-wrap: wrap;
             gap: 20px;
-            border-bottom: 1px solid rgba(169,198,255,0.35);
+            border-bottom: 1px solid rgba(169, 198, 255, 0.35);
             position: sticky;
             top: 0;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(20px);
             z-index: 999;
             transition: all 0.3s ease;
@@ -100,13 +112,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 12px 22px -8px rgba(169,198,255,0.45);
+            box-shadow: 0 12px 22px -8px rgba(169, 198, 255, 0.45);
             animation: iconFloat 6s infinite ease-in-out;
         }
 
         @keyframes iconFloat {
-            0%,100% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-3px);
+            }
         }
 
         .logo-icon svg {
@@ -135,9 +154,17 @@
         }
 
         @keyframes gentleBreathe {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.025); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.025);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .nav-links {
@@ -198,39 +225,44 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
             animation: shimmer 3s infinite;
         }
 
         @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 150%; }
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 150%;
+            }
         }
 
         .btn-primary {
             background: linear-gradient(105deg, #b8d0ff, #a9c6ff);
             color: #133c55;
-            box-shadow: 0 8px 18px rgba(169,198,255,0.4);
+            box-shadow: 0 8px 18px rgba(169, 198, 255, 0.4);
         }
 
         .btn-primary:hover {
             transform: translateY(-4px);
-            box-shadow: 0 16px 28px -8px rgba(169,198,255,0.55);
+            box-shadow: 0 16px 28px -8px rgba(169, 198, 255, 0.55);
             background: linear-gradient(105deg, #a9c6ff, #9bb9f0);
         }
 
         .btn-outline {
-            border: 2px solid rgba(169,198,255,0.6);
+            border: 2px solid rgba(169, 198, 255, 0.6);
             color: #1b5472;
-            background: rgba(169,198,255,0.12);
+            background: rgba(169, 198, 255, 0.12);
             backdrop-filter: blur(3px);
         }
 
         .btn-outline:hover {
-            background: rgba(169,198,255,0.22);
+            background: rgba(169, 198, 255, 0.22);
             border-color: #b8d0ff;
             transform: translateY(-3px);
-            box-shadow: 0 10px 22px rgba(169,198,255,0.3);
+            box-shadow: 0 10px 22px rgba(169, 198, 255, 0.3);
         }
 
         .hero {
@@ -248,7 +280,7 @@
         }
 
         .hero-badge {
-            background: rgba(197,217,255,0.35);
+            background: rgba(197, 217, 255, 0.35);
             display: inline-block;
             padding: 7px 18px;
             border-radius: 40px;
@@ -257,13 +289,20 @@
             color: #1a6283;
             margin-bottom: 22px;
             backdrop-filter: blur(3px);
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             animation: badgePulse 4s infinite ease-in-out;
         }
 
         @keyframes badgePulse {
-            0%,100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.03);
+            }
         }
 
         .hero-content h2 {
@@ -302,10 +341,23 @@
         }
 
         @keyframes carFloat {
-            0%,100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-4px) rotate(0.3deg); }
-            50% { transform: translateY(-2px) rotate(0deg); }
-            75% { transform: translateY(-5px) rotate(-0.2deg); }
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-4px) rotate(0.3deg);
+            }
+
+            50% {
+                transform: translateY(-2px) rotate(0deg);
+            }
+
+            75% {
+                transform: translateY(-5px) rotate(-0.2deg);
+            }
         }
 
         .soft-glow::before {
@@ -313,7 +365,7 @@
             position: absolute;
             width: 280px;
             height: 280px;
-            background: radial-gradient(circle, rgba(169,198,255,0.55), transparent 75%);
+            background: radial-gradient(circle, rgba(169, 198, 255, 0.55), transparent 75%);
             border-radius: 50%;
             top: -50px;
             right: -40px;
@@ -323,8 +375,17 @@
         }
 
         @keyframes glowPulse {
-            0%,100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.1); opacity: 0.8; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
         }
 
         .featured {
@@ -353,21 +414,28 @@
         }
 
         .car-card {
-            background: rgba(255,255,255,0.96);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(4px);
             border-radius: 34px;
             padding: 28px;
             transition: all 0.38s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            box-shadow: 0 18px 40px -16px rgba(0,0,0,0.06), 0 0 0 1px rgba(169,198,255,0.35);
-            border: 1px solid rgba(255,255,255,0.7);
+            box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(169, 198, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.7);
             position: relative;
             overflow: hidden;
             animation: cardFloat 5s infinite ease-in-out;
         }
 
         @keyframes cardFloat {
-            0%,100% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
         }
 
         .car-card::after {
@@ -377,18 +445,23 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: linear-gradient(transparent, rgba(255,255,255,0.1), transparent);
+            background: linear-gradient(transparent, rgba(255, 255, 255, 0.1), transparent);
             animation: lightSweep 6s infinite linear;
         }
 
         @keyframes lightSweep {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .car-card:hover {
             transform: translateY(-12px);
-            box-shadow: 0 35px 48px -20px rgba(169,198,255,0.5), 0 0 0 2px rgba(169,198,255,0.55);
+            box-shadow: 0 35px 48px -20px rgba(169, 198, 255, 0.5), 0 0 0 2px rgba(169, 198, 255, 0.55);
             background: #ffffff;
         }
 
@@ -411,13 +484,18 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             animation: imgShine 5s infinite linear;
         }
 
         @keyframes imgShine {
-            0% { left: -100%; }
-            100% { left: 150%; }
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 150%;
+            }
         }
 
         .car-card h3 {
@@ -505,18 +583,46 @@
             font-size: 0.8rem;
         }
 
+        .login-status {
+            text-align: center;
+            background: rgba(169, 198, 255, 0.25);
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 10px 24px;
+            margin: 20px auto 0;
+            display: inline-block;
+            width: auto;
+            font-size: 0.9rem;
+            color: #0e405a;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
         @media (max-width: 880px) {
-            .navbar {flex-direction: column;}
-            .hero h2 {font-size: 2.6rem;}
-            .container {padding: 0 24px;}
+            .navbar {
+                flex-direction: column;
+            }
+
+            .hero h2 {
+                font-size: 2.6rem;
+            }
+
+            .container {
+                padding: 0 24px;
+            }
         }
 
         @media (max-width: 640px) {
-            .cursor-follower {display: none;}
-            body {cursor: auto;}
+            .cursor-follower {
+                display: none;
+            }
+
+            body {
+                cursor: auto;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="cursor-follower" id="cursorFollower"></div>
 
@@ -526,10 +632,12 @@
                 <div class="logo-area breathing">
                     <div class="logo-icon">
                         <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 2L6 12L9 22L16 28L23 22L26 12L16 2Z" fill="white" stroke="#a9c6ff" stroke-width="1.2" stroke-linejoin="round"/>
-                            <path d="M20 15L14 19M12 14L18 10" stroke="#7fa5e0" stroke-width="1.5" stroke-linecap="round"/>
-                            <circle cx="16" cy="16" r="3" fill="#8eb2ee" stroke="white" stroke-width="1"/>
-                            <path d="M16 22 L16 28 M12 25 L20 25" stroke="#9bbcf5" stroke-width="1.2"/>
+                            <path d="M16 2L6 12L9 22L16 28L23 22L26 12L16 2Z" fill="white" stroke="#a9c6ff"
+                                stroke-width="1.2" stroke-linejoin="round" />
+                            <path d="M20 15L14 19M12 14L18 10" stroke="#7fa5e0" stroke-width="1.5"
+                                stroke-linecap="round" />
+                            <circle cx="16" cy="16" r="3" fill="#8eb2ee" stroke="white" stroke-width="1" />
+                            <path d="M16 22 L16 28 M12 25 L20 25" stroke="#9bbcf5" stroke-width="1.2" />
                         </svg>
                     </div>
                     <div class="logo-text">
@@ -538,35 +646,47 @@
                     </div>
                 </div>
                 <div class="nav-links">
-                    <!-- 双向导航链接，直接跳转到同目录下的其他页面 -->
-                    <a href="home.html" class="nav-link">Home</a>
-                    <a href="search.html" class="nav-link">Search</a>
-                    <a href="addcar.html" class="nav-link">Add Car</a>
-                    <a href="login.html" class="nav-link">Login</a>
-                    <a href="registration.html" class="nav-link">Register</a>
+                    <a href="registration.php" class="nav-link">Registration</a>
+                    <a href="login.php" class="nav-link">Login</a>
                 </div>
             </nav>
+
+            <div style="display: flex; justify-content: center;">
+                <?php if(isset($_SESSION['seller_id'])): ?>
+                <div class="login-status">
+                    You are logged in as <strong>
+                        <?php echo htmlspecialchars($_SESSION['username']); ?>
+                    </strong>.
+                    <a href="seller.php" style="color: #1a5a82; font-weight: 600;">Go to your dashboard</a> |
+                    <a href="logout.php" style="color: #1a5a82; font-weight: 600;">Logout</a>
+                </div>
+                <?php endif; ?>
+            </div>
 
             <section class="hero">
                 <div class="hero-content">
                     <div class="hero-badge">Blue Certified · Sustainable Drive</div>
                     <h2>Drive the future,<br>sustainably.</h2>
-                    <p>VanCar offers a curated selection of hybrid & electric used cars. Every vehicle undergoes a rigorous 150-point eco-inspection. Quality driving with a smaller footprint.</p>
+                    <p>VanCar offers a curated selection of hybrid & electric used cars. Every vehicle undergoes a
+                        rigorous 150-point eco-inspection. Quality driving with a smaller footprint.</p>
                     <div class="hero-buttons">
-                        <a href="search.html" class="btn btn-primary">Search Cars →</a>
-                        <a href="addcar.html" class="btn btn-outline">Sell Your Car</a>
+                        <a href="search.php" class="btn btn-primary">Search Cars →</a>
+                        <a href="addcar.php" class="btn btn-outline">Sell Your Car</a>
                     </div>
                 </div>
                 <div class="hero-image soft-glow">
                     <svg width="440" height="270" viewBox="0 0 480 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M80 120C80 95 110 80 170 80H310C370 80 400 95 400 120V180C400 205 370 220 310 220H170C110 220 80 205 80 180V120Z" fill="#F0F7FF" stroke="#b8d0ff" stroke-width="3" rx="28"/>
-                        <circle cx="140" cy="210" r="32" fill="#1A4B6C" stroke="#c5d9ff" stroke-width="3"/>
-                        <circle cx="340" cy="210" r="32" fill="#1A4B6C" stroke="#c5d9ff" stroke-width="3"/>
-                        <path d="M170 105 L240 85 L310 105" stroke="#a9c6ff" stroke-width="2.5" stroke-linecap="round"/>
-                        <rect x="210" y="100" width="80" height="28" rx="10" fill="#C5D9FF"/>
-                        <path d="M105 155 H85V135H105V155Z" fill="#B8D0FF"/>
-                        <path d="M375 155 H395V135H375V155Z" fill="#B8D0FF"/>
-                        <path d="M190 140 H290" stroke="#a9c6ff" stroke-width="2" stroke-linecap="round"/>
+                        <path
+                            d="M80 120C80 95 110 80 170 80H310C370 80 400 95 400 120V180C400 205 370 220 310 220H170C110 220 80 205 80 180V120Z"
+                            fill="#F0F7FF" stroke="#b8d0ff" stroke-width="3" rx="28" />
+                        <circle cx="140" cy="210" r="32" fill="#1A4B6C" stroke="#c5d9ff" stroke-width="3" />
+                        <circle cx="340" cy="210" r="32" fill="#1A4B6C" stroke="#c5d9ff" stroke-width="3" />
+                        <path d="M170 105 L240 85 L310 105" stroke="#a9c6ff" stroke-width="2.5"
+                            stroke-linecap="round" />
+                        <rect x="210" y="100" width="80" height="28" rx="10" fill="#C5D9FF" />
+                        <path d="M105 155 H85V135H105V155Z" fill="#B8D0FF" />
+                        <path d="M375 155 H395V135H375V155Z" fill="#B8D0FF" />
+                        <path d="M190 140 H290" stroke="#a9c6ff" stroke-width="2" stroke-linecap="round" />
                     </svg>
                 </div>
             </section>
@@ -577,14 +697,17 @@
                 <div class="card-grid">
                     <div class="car-card">
                         <div class="card-img">
-                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M30 60C30 40 60 30 100 30H170C190 30 200 50 200 65V85C200 100 180 105 140 105H60C20 105 20 85 20 70V60" fill="#ffffff" stroke="#222222" stroke-width="2" rx="16"/>
-                                <path d="M50 45 L150 45" stroke="#0071E3" stroke-width="2.5" stroke-linecap="round"/>
-                                <path d="M60 70 L140 70" stroke="#E5E5E5" stroke-width="1.5"/>
-                                <circle cx="65" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5"/>
-                                <circle cx="135" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5"/>
-                                <path d="M40 75 H45" stroke="#0071E3" stroke-width="1.5"/>
-                                <path d="M155 75 H160" stroke="#0071E3" stroke-width="1.5"/>
+                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M30 60C30 40 60 30 100 30H170C190 30 200 50 200 65V85C200 100 180 105 140 105H60C20 105 20 85 20 70V60"
+                                    fill="#ffffff" stroke="#222222" stroke-width="2" rx="16" />
+                                <path d="M50 45 L150 45" stroke="#0071E3" stroke-width="2.5" stroke-linecap="round" />
+                                <path d="M60 70 L140 70" stroke="#E5E5E5" stroke-width="1.5" />
+                                <circle cx="65" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5" />
+                                <circle cx="135" cy="100" r="18" fill="#111" stroke="#ccc" stroke-width="1.5" />
+                                <path d="M40 75 H45" stroke="#0071E3" stroke-width="1.5" />
+                                <path d="M155 75 H160" stroke="#0071E3" stroke-width="1.5" />
                             </svg>
                         </div>
                         <h3>Tesla Model 3</h3>
@@ -598,14 +721,17 @@
 
                     <div class="car-card">
                         <div class="card-img">
-                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M40 55C40 40 70 35 100 35H160C180 35 190 55 190 65V85C190 100 170 105 130 105H70C30 105 30 80 30 65V55" fill="#EEF4FF" stroke="#3B6A9C" stroke-width="2" rx="8"/>
-                                <rect x="70" y="42" width="60" height="10" rx="5" fill="#5FB0FF"/>
-                                <path d="M50 70 L150 70" stroke="#3B6A9C" stroke-width="1.5"/>
-                                <circle cx="65" cy="100" r="17" fill="#254662" stroke="#a9c6ff" stroke-width="1.5"/>
-                                <circle cx="135" cy="100" r="17" fill="#254662" stroke="#a9c6ff" stroke-width="1.5"/>
-                                <path d="M42 75 H48" stroke="#5FB0FF" stroke-width="1.5"/>
-                                <path d="M152 75 H158" stroke="#5FB0FF" stroke-width="1.5"/>
+                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M40 55C40 40 70 35 100 35H160C180 35 190 55 190 65V85C190 100 170 105 130 105H70C30 105 30 80 30 65V55"
+                                    fill="#EEF4FF" stroke="#3B6A9C" stroke-width="2" rx="8" />
+                                <rect x="70" y="42" width="60" height="10" rx="5" fill="#5FB0FF" />
+                                <path d="M50 70 L150 70" stroke="#3B6A9C" stroke-width="1.5" />
+                                <circle cx="65" cy="100" r="17" fill="#254662" stroke="#a9c6ff" stroke-width="1.5" />
+                                <circle cx="135" cy="100" r="17" fill="#254662" stroke="#a9c6ff" stroke-width="1.5" />
+                                <path d="M42 75 H48" stroke="#5FB0FF" stroke-width="1.5" />
+                                <path d="M152 75 H158" stroke="#5FB0FF" stroke-width="1.5" />
                             </svg>
                         </div>
                         <h3>Hyundai Ioniq 5</h3>
@@ -619,14 +745,17 @@
 
                     <div class="car-card">
                         <div class="card-img">
-                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M35 58C35 40 65 35 95 35H165C185 35 195 55 195 70V88C195 102 175 105 145 105H55C25 105 25 82 25 68V58" fill="#E6F0FF" stroke="#2D4A66" stroke-width="2" rx="14"/>
-                                <path d="M60 48 L140 48" stroke="#2D4A66" stroke-width="2.5"/>
-                                <path d="M55 68 L145 68" stroke="#006FBA" stroke-width="1.5"/>
-                                <circle cx="60" cy="100" r="18" fill="#1E344D" stroke="#a9c6ff" stroke-width="1.5"/>
-                                <circle cx="140" cy="100" r="18" fill="#1E344D" stroke="#a9c6ff" stroke-width="1.5"/>
-                                <path d="M40 75 H46" stroke="#006FBA" stroke-width="1.5"/>
-                                <path d="M154 75 H160" stroke="#006FBA" stroke-width="1.5"/>
+                            <svg width="180" height="110" viewBox="0 0 200 110" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M35 58C35 40 65 35 95 35H165C185 35 195 55 195 70V88C195 102 175 105 145 105H55C25 105 25 82 25 68V58"
+                                    fill="#E6F0FF" stroke="#2D4A66" stroke-width="2" rx="14" />
+                                <path d="M60 48 L140 48" stroke="#2D4A66" stroke-width="2.5" />
+                                <path d="M55 68 L145 68" stroke="#006FBA" stroke-width="1.5" />
+                                <circle cx="60" cy="100" r="18" fill="#1E344D" stroke="#a9c6ff" stroke-width="1.5" />
+                                <circle cx="140" cy="100" r="18" fill="#1E344D" stroke="#a9c6ff" stroke-width="1.5" />
+                                <path d="M40 75 H46" stroke="#006FBA" stroke-width="1.5" />
+                                <path d="M154 75 H160" stroke="#006FBA" stroke-width="1.5" />
                             </svg>
                         </div>
                         <h3>Ford Mustang Mach-E</h3>
@@ -641,11 +770,12 @@
             </section>
 
             <div style="display: flex; justify-content: center; gap: 32px; margin: 20px 0 60px;">
-                <a href="addcar.html" class="btn btn-outline">Become a Seller →</a>
-                <a href="search.html" class="btn btn-primary">Advanced Search Inventory →</a>
+                <a href="addcar.php" class="btn btn-outline">Become a Seller →</a>
+                <a href="search.php" class="btn btn-primary">Advanced Search Inventory →</a>
             </div>
             <div style="text-align: center; margin-top: -30px; margin-bottom: 40px;">
-                <p style="color: #4c7e9b;">Trusted by 2,500+ green drivers | Over 300+ sustainable vehicles available</p>
+                <p style="color: #4c7e9b;">Trusted by 2,500+ green drivers | Over 300+ sustainable vehicles available
+                </p>
             </div>
         </div>
     </main>
@@ -660,14 +790,14 @@
                 <div class="footer-links">
                     <div class="footer-col">
                         <strong>Explore</strong>
-                        <a href="home.html">Home</a>
-                        <a href="search.html">Search Cars</a>
-                        <a href="addcar.html">Sell Your Car</a>
+                        <a href="home.php">Home</a>
+                        <a href="search.php">Search Cars</a>
+                        <a href="addcar.php">Sell Your Car</a>
                     </div>
                     <div class="footer-col">
                         <strong>Account</strong>
-                        <a href="login.html">Login</a>
-                        <a href="registration.html">Register</a>
+                        <a href="login.php">Login</a>
+                        <a href="registration.php">Register</a>
                     </div>
                 </div>
             </div>
@@ -679,7 +809,7 @@
 
     <script>
         const cursor = document.getElementById('cursorFollower');
-        if(cursor){
+        if (cursor) {
             let mouseX = 0, mouseY = 0;
             let cursorX = 0, cursorY = 0;
 
@@ -688,7 +818,7 @@
                 mouseY = e.clientY;
             });
 
-            function animateCursor(){
+            function animateCursor() {
                 cursorX += (mouseX - cursorX) * 0.22;
                 cursorY += (mouseY - cursorY) * 0.22;
                 cursor.style.left = cursorX + 'px';
@@ -711,7 +841,7 @@
         }
 
         let lightShift = 0;
-        function moveBgGlow(){
+        function moveBgGlow() {
             lightShift += 0.0032;
             let x = 35 + Math.sin(lightShift) * 13;
             let y = 45 + Math.cos(lightShift * 0.7) * 16;
@@ -721,4 +851,5 @@
         moveBgGlow();
     </script>
 </body>
+
 </html>
