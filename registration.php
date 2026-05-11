@@ -2,55 +2,64 @@
 
 session_start();
 
-if (!isset($_SESSION['seller_id'])) {
-    header("Location: login.php");
-    exit;
-}
-
-require_once 'db_connection.php';
-
-$error_message = '';
-$success_message = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $colour = trim($_POST['colour']);
-    $model = trim($_POST['model']);
-    $year = intval($_POST['year']);
-    $location = trim($_POST['location']);
-    $price = floatval($_POST['price']);
-    $seller_id = $_SESSION['seller_id'];
+    require_once 'db_connection.php';
 
-    $target_dir = "uploads/";
-    if (!is_dir($target_dir)) {
-        mkdir($target_dir, 0777, true);
-    }
+    $name = trim($_POST['name']);
+    $address = trim($_POST['address']);
+    $phone = trim($_POST['phone']);
+    $email = trim($_POST['email']);
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
 
-    $file_name = time() . "_" . basename($_FILES["car_image"]["name"]);
-    $target_file = $target_dir . $file_name;
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+    $errors = [];
 
-    $check = getimagesize($_FILES["car_image"]["tmp_name"]);
-    if ($check === false) {
-        $error_message = "File is not a valid image";
-    } elseif ($_FILES["car_image"]["size"] > 2 * 1024 * 1024) {
-        $error_message = "Image exceeds 2MB limit";
-    } elseif (!in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
-        $error_message = "Only JPG, JPEG, PNG, GIF allowed";
-    } else {
-        if (move_uploaded_file($_FILES["car_image"]["tmp_name"], $target_file)) {
-            $stmt = $conn->prepare("INSERT INTO cars (seller_id, colour, model, year, location, price, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("issisds", $seller_id, $colour, $model, $year, $location, $price, $target_file);
-            if ($stmt->execute()) {
-                $success_message = "Car posted successfully!";
-            } else {
-                $error_message = "Database save failed: " . $stmt->error;
-            }
-            $stmt->close();
+    if (!preg_match('/^[A-Za-z ]+$/', $name))
+        $errors[] = "Name can only contain letters and spaces";
+    if (!preg_match('/^[A-Za-z0-9 ]+$/', $address))
+        $errors[] = "Address can only contain letters, numbers and spaces";
+    if (!preg_match('/^1[3-9]\d{9}$/', $phone))
+        $errors[] = "Invalid Chinese phone number format";
+    if (substr_count($email, '@') != 1)
+        $errors[] = "Email must contain exactly one '@' symbol";
+    $domain = substr($email, strrpos($email, '.'));
+    if (!in_array($domain, ['.com', '.cn']))
+        $errors[] = "Email must end with .com or .cn";
+    if (!preg_match('/^[A-Za-z0-9]{6,}$/', $username))
+        $errors[] = "Username must be at least 6 alphanumeric characters";
+    if (!preg_match('/^[A-Za-z0-9]{6,}$/', $password))
+        $errors[] = "Password must be at least 6 alphanumeric characters";
+
+    if (empty($errors)) {
+        $check = $conn->prepare("SELECT seller_id FROM sellers WHERE username = ? OR email = ?");
+        $check->bind_param("ss", $username, $email);
+        $check->execute();
+        $check->store_result();
+        if ($check->num_rows > 0) {
+            $error_msg = "Username or email already registered";
         } else {
-            $error_message = "Image upload failed";
+            $hashed_pwd = password_hash($password, PASSWORD_DEFAULT);
+            $insert = $conn->prepare("INSERT INTO sellers (name, address, phone, email, username, password) VALUES (?, ?, ?, ?, ?, ?)");
+            $insert->bind_param("ssssss", $name, $address, $phone, $email, $username, $hashed_pwd);
+            if ($insert->execute()) {
+                $new_seller_id = $conn->insert_id;
+                $_SESSION['seller_id'] = $new_seller_id;
+                $_SESSION['username'] = $username;
+                header("Location: seller.php");
+                exit;
+            } else {
+                $error_msg = "Registration failed, please try again later";
+            }
         }
+        $check->close();
+    } else {
+        $error_msg = implode(", ", $errors);
     }
-    $conn->close();
+
+    if (isset($error_msg)) {
+        header("Location: registration.php?error=" . urlencode($error_msg));
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -59,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>VanCar | Add Vehicle · List Your EV</title>
+    <title>VanCar | Sign Up · Join Electric Mobility</title>
     <style>
         * {
             margin: 0;
@@ -72,8 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         a,
         button,
         input,
-        textarea,
-        select,
         .btn {
             cursor: none;
         }
@@ -248,22 +255,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #0f344c;
         }
 
-        .btn-outline-light {
-            border: 2px solid #a9c6ff;
-            color: #1b5472;
-            background: rgba(169, 198, 255, 0.1);
-            backdrop-filter: blur(2px);
-        }
-
-        .btn-outline-light:hover {
-            background: rgba(169, 198, 255, 0.2);
-            border-color: #b8d0ff;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(169, 198, 255, 0.3);
-            color: #10435e;
-        }
-
-        .add-car-section {
+        .register-section {
             flex: 1;
             padding: 50px 24px 70px;
             display: flex;
@@ -271,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .glass-form-card {
-            max-width: 760px;
+            max-width: 780px;
             width: 100%;
             padding: 40px 38px;
             border-radius: 48px;
@@ -316,7 +308,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .input-group label {
@@ -326,8 +318,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             letter-spacing: 0.3px;
         }
 
-        .input-group input,
-        .input-group select {
+        .required-star {
+            color: #e06c6c;
+            margin-left: 2px;
+        }
+
+        .input-group input {
             width: 100%;
             padding: 12px 18px;
             font-size: 0.95rem;
@@ -341,104 +337,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: 500;
         }
 
-        .input-group input:focus,
-        .input-group select:focus {
+        .input-group input:focus {
             border-color: #a9c6ff;
             background: #ffffff;
             box-shadow: 0 0 0 3px rgba(169, 198, 255, 0.3);
         }
 
-        .input-group input::placeholder,
-        .input-group select {
+        .input-group input::placeholder {
             color: #94aec7;
+            font-weight: 400;
+            font-size: 0.85rem;
         }
 
-        select option {
-            background: #ffffff;
-            color: #12445f;
-        }
-
-        .image-upload-area {
-            margin-top: 8px;
-        }
-
-        .upload-preview {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            background: rgba(230, 242, 255, 0.6);
-            border-radius: 28px;
-            padding: 20px;
-            border: 1px dashed rgba(169, 198, 255, 0.8);
-            transition: all 0.2s;
-        }
-
-        .preview-img-container {
-            width: 100%;
-            min-height: 160px;
-            background: #f5faff;
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #imagePreview {
-            max-width: 100%;
-            max-height: 180px;
-            object-fit: contain;
-            border-radius: 20px;
-            transition: 0.2s;
+        .error-message {
+            font-size: 0.7rem;
+            color: #dc2626;
+            margin-top: 4px;
+            margin-left: 12px;
             display: none;
         }
 
-        .placeholder-preview {
-            color: #54829b;
-            font-size: 0.85rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 32px;
-        }
-
-        .upload-label {
-            background: rgba(169, 198, 255, 0.15);
-            border: 1px solid rgba(169, 198, 255, 0.6);
-            border-radius: 40px;
-            padding: 10px 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #1b5472;
-            cursor: none;
-            transition: 0.2s;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .upload-label:hover {
-            background: rgba(169, 198, 255, 0.3);
-            border-color: #a9c6ff;
-            color: #0e405a;
-        }
-
-        input[type="file"] {
-            display: none;
+        .input-group.error input {
+            border-color: #dc2626;
         }
 
         .submit-area {
             margin-top: 36px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
 
         .submit-btn {
             min-width: 200px;
             font-size: 1rem;
             padding: 14px 32px;
+        }
+
+        .login-redirect {
+            font-size: 0.85rem;
+            color: #3a7897;
+        }
+
+        .login-redirect a {
+            color: #1f6b9b;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .login-redirect a:hover {
+            text-decoration: underline;
+            color: #0e5a87;
         }
 
         .footer {
@@ -505,6 +456,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #b0cfdf;
         }
 
+        .global-error {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 40px;
+            background: rgba(255, 100, 100, 0.15);
+            color: #b13e3e;
+            border: 1px solid #ffa1a1;
+            font-size: 0.85rem;
+        }
+
         @media (max-width: 720px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -546,8 +508,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             body,
             a,
             button,
-            input,
-            select {
+            input {
                 cursor: auto;
             }
         }
@@ -561,37 +522,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 opacity: 0;
                 transform: translateY(16px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-
-        .message {
-            text-align: center;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 40px;
-            font-weight: 500;
-        }
-
-        .error-msg {
-            background: rgba(255, 100, 100, 0.15);
-            color: #b13e3e;
-            border: 1px solid #ffa1a1;
-        }
-
-        .success-msg {
-            background: rgba(100, 200, 100, 0.15);
-            color: #2c6e2c;
-            border: 1px solid #8bc88b;
-        }
     </style>
 </head>
 
 <body>
-
     <div class="cursor-follower" id="cursorFollower"></div>
 
     <main style="flex: 1; display: flex; flex-direction: column;">
@@ -615,104 +554,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="nav-links">
                     <a href="home.php" class="nav-link">Home</a>
-                    <a href="seller.php" class="nav-link">Sellers</a>
-                    <a href="search.php" class="nav-link">Search</a>
-                    <a href="inventory.php" class="nav-link">Inventory</a>
+                    <a href="login.php" class="nav-link">Login</a>
                 </div>
             </nav>
         </div>
 
-        <div class="add-car-section">
+        <div class="register-section">
             <div class="glass-form-card">
                 <div class="form-header">
-                    <h2>List Your Electric Vehicle</h2>
-                    <p>Fill in the details to list your EV on VanCar</p>
+                    <h2>Create Account</h2>
+                    <p>Join VanCar and start your electric journey</p>
                 </div>
 
-                <!-- Display messages -->
-                <?php if (!empty($error_message)): ?>
-                <div class="message error-msg">
-                    <?php echo htmlspecialchars($error_message); ?>
-                </div>
-                <?php endif; ?>
-                <?php if (!empty($success_message)): ?>
-                <div class="message success-msg">
-                    <?php echo htmlspecialchars($success_message); ?>
-                </div>
+                <?php if (isset($_GET['error'])): ?>
+                    <div class="global-error"><?php echo htmlspecialchars($_GET['error']); ?></div>
                 <?php endif; ?>
 
-                <form id="addCarForm" action="<?php echo htmlspecialchars($_SERVER[" PHP_SELF"]); ?>" method="POST"
-                    enctype="multipart/form-data">
+                <form id="registerForm" action="registration.php" method="POST">
                     <div class="form-grid">
-                        <!-- Colour -->
-                        <div class="input-group">
-                            <label>Colour</label>
-                            <input type="text" id="colour" name="colour" placeholder="e.g., Aurora Silver" required>
+                        <!-- Full Name (now name="name") -->
+                        <div class="input-group" id="group-name">
+                            <label>Full Name <span class="required-star">*</span> <span style="font-weight: normal; font-size: 0.7rem;">(letters & spaces only)</span></label>
+                            <input type="text" id="fullname" name="name" placeholder="e.g., Li Wei" autocomplete="name">
+                            <div class="error-message" id="error-name">Only letters and spaces allowed</div>
                         </div>
-                        <!-- Model -->
-                        <div class="input-group">
-                            <label>Model</label>
-                            <input type="text" id="model" name="model" placeholder="Tesla Model 3, BYD Seal..."
-                                required>
+                        <!-- Address -->
+                        <div class="input-group" id="group-address">
+                            <label>Address <span class="required-star">*</span> <span style="font-weight: normal; font-size: 0.7rem;">(letters, numbers &amp; spaces)</span></label>
+                            <input type="text" id="address" name="address" placeholder="e.g., Building 12, Green District" autocomplete="address-line1">
+                            <div class="error-message" id="error-address">Only letters, numbers and spaces allowed</div>
                         </div>
-                        <!-- Year -->
-                        <div class="input-group">
-                            <label>Year</label>
-                            <select id="year" name="year" required>
-                                <option value="">Select year</option>
-                                <option>2025</option>
-                                <option>2024</option>
-                                <option>2023</option>
-                                <option>2022</option>
-                                <option>2021</option>
-                                <option>2020</option>
-                                <option>2019</option>
-                                <option>2018</option>
-                            </select>
+                        <!-- Phone Number -->
+                        <div class="input-group" id="group-phone">
+                            <label>Phone Number <span class="required-star">*</span> <span style="font-weight: normal; font-size: 0.7rem;">(China mobile)</span></label>
+                            <input type="tel" id="phone" name="phone" placeholder="13912345678" autocomplete="tel">
+                            <div class="error-message" id="error-phone">Enter a valid 11-digit China mobile number (must start with 1, second digit 3-9)</div>
                         </div>
-                        <!-- Location -->
-                        <div class="input-group">
-                            <label>Location</label>
-                            <input type="text" id="location" name="location"
-                                placeholder="City / Dealership (e.g., Shanghai)" required>
+                        <!-- Email -->
+                        <div class="input-group" id="group-email">
+                            <label>Email Address <span class="required-star">*</span> <span style="font-weight: normal; font-size: 0.7rem;">(.com or .cn)</span></label>
+                            <input type="email" id="email" name="email" placeholder="name@example.com" autocomplete="email">
+                            <div class="error-message" id="error-email">Email must contain exactly one '@' and end with .com or .cn</div>
                         </div>
-                        <!-- Price (USD) -->
-                        <div class="input-group">
-                            <label>Price (USD)</label>
-                            <input type="number" id="price" name="price" placeholder="e.g., 35990" required step="1">
+                        <!-- Username -->
+                        <div class="input-group" id="group-username">
+                            <label>Username <span class="required-star">*</span> <span style="font-weight: normal; font-size: 0.7rem;">(min 6 alphanumeric)</span></label>
+                            <input type="text" id="username" name="username" placeholder="At least 6 letters or digits" autocomplete="username">
+                            <div class="error-message" id="error-username">Username must be at least 6 alphanumeric characters (letters/digits only)</div>
                         </div>
-                        <div class="input-group full-width">
-                            <label>Car Image</label>
-                            <div class="image-upload-area">
-                                <div class="upload-preview">
-                                    <div class="preview-img-container" id="previewContainer">
-                                        <img id="imagePreview" alt="Preview" src="#">
-                                        <div class="placeholder-preview" id="placeholderPreview">
-                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#54829b"
-                                                stroke-width="1.2">
-                                                <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" />
-                                                <circle cx="8.5" cy="10.5" r="2.5" stroke="currentColor" />
-                                                <path d="M21 15L16 10L5 21" stroke="currentColor"
-                                                    stroke-linecap="round" />
-                                            </svg>
-                                            <span>JPEG, PNG, GIF (Max 2MB)</span>
-                                        </div>
-                                    </div>
-                                    <label for="carImageInput" class="upload-label">Choose Image</label>
-                                    <input type="file" id="carImageInput" name="car_image"
-                                        accept="image/jpeg, image/png, image/gif">
-                                </div>
-                            </div>
+                        <!-- Password -->
+                        <div class="input-group" id="group-password">
+                            <label>Password <span class="required-star">*</span> <span style="font-weight: normal; font-size: 0.7rem;">(min 6 alphanumeric)</span></label>
+                            <input type="password" id="password" name="password" placeholder="At least 6 letters or digits" autocomplete="new-password">
+                            <div class="error-message" id="error-password">Password must be at least 6 alphanumeric characters (letters/digits only)</div>
+                        </div>
+                        <!-- Confirm Password -->
+                        <div class="input-group full-width" id="group-confirm">
+                            <label>Confirm Password <span class="required-star">*</span></label>
+                            <input type="password" id="confirmPwd" name="confirmPwd" placeholder="Re-enter your password">
+                            <div class="error-message" id="error-confirm">Passwords do not match</div>
                         </div>
                     </div>
+
                     <div class="submit-area">
-                        <button type="submit" class="btn btn-primary submit-btn">List Vehicle →</button>
+                        <button type="submit" class="btn btn-primary submit-btn">Sign Up →</button>
+                        <div class="login-redirect">
+                            Already have an account? <a href="login.php">Log in</a>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Footer -->
         <footer class="footer">
             <div class="container">
                 <div class="footer-inner">
@@ -724,14 +637,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="footer-col">
                             <strong>Explore</strong>
                             <a href="home.php">Home</a>
-                            <a href="seller.php">Sellers Hub</a>
                             <a href="search.php">Search Cars</a>
+                            <a href="addcar.php">Sell Your Car</a>
                         </div>
                         <div class="footer-col">
-                            <strong>Support</strong>
-                            <a href="#">FAQ</a>
-                            <a href="#">Warranty</a>
-                            <a href="#">Contact</a>
+                            <strong>Account</strong>
+                            <a href="login.php">Login</a>
+                            <a href="registration.php">Register</a>
                         </div>
                     </div>
                 </div>
@@ -760,7 +672,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             animateCursor();
 
-            const interactiveElements = document.querySelectorAll('a, button, .btn, .nav-link, input, select, .upload-label');
+            const interactiveElements = document.querySelectorAll('a, button, .btn, .nav-link, input');
             interactiveElements.forEach(el => {
                 el.addEventListener('mouseenter', () => {
                     cursor.style.transform = 'translate(-50%, -50%) scale(1.35)';
@@ -775,29 +687,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         }
 
-        const fileInput = document.getElementById('carImageInput');
-        const previewImg = document.getElementById('imagePreview');
-        const placeholderDiv = document.getElementById('placeholderPreview');
+        const form = document.getElementById('registerForm');
+        const nameInput = document.getElementById('fullname');
+        const addressInput = document.getElementById('address');
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirmPwd');
 
-        fileInput.addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (file) {
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Image must be less than 2MB');
-                    fileInput.value = '';
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    previewImg.src = e.target.result;
-                    previewImg.style.display = 'block';
-                    placeholderDiv.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
+        function showError(groupId, errorId, show, customMsg = null) {
+            const group = document.getElementById(groupId);
+            const errorDiv = document.getElementById(errorId);
+            if (show) {
+                group.classList.add('error');
+                errorDiv.style.display = 'block';
+                if (customMsg) errorDiv.innerText = customMsg;
             } else {
-                previewImg.src = '#';
-                previewImg.style.display = 'none';
-                placeholderDiv.style.display = 'flex';
+                group.classList.remove('error');
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function validateName(name) { return /^[A-Za-z\s]+$/.test(name); }
+        function validateAddress(addr) { return /^[A-Za-z0-9\s]+$/.test(addr); }
+        function validatePhone(phone) { return /^1[3-9]\d{9}$/.test(phone); }
+        function validateEmail(email) {
+            const atCount = (email.match(/@/g) || []).length;
+            if (atCount !== 1) return false;
+            const lowerEmail = email.toLowerCase();
+            return /^[^\s@]+@[^\s@]+\.(com|cn)$/.test(lowerEmail);
+        }
+        function validateUsername(username) { return /^[A-Za-z0-9]{6,}$/.test(username); }
+        function validatePassword(password) { return /^[A-Za-z0-9]{6,}$/.test(password); }
+
+        function validateField(fieldId) {
+            switch (fieldId) {
+                case 'fullname':
+                    const nameVal = nameInput.value.trim();
+                    const nameOk = nameVal !== '' && validateName(nameVal);
+                    showError('group-name', 'error-name', !nameOk);
+                    return nameOk;
+                case 'address':
+                    const addrVal = addressInput.value.trim();
+                    const addrOk = addrVal !== '' && validateAddress(addrVal);
+                    showError('group-address', 'error-address', !addrOk);
+                    return addrOk;
+                case 'phone':
+                    const phoneVal = phoneInput.value.trim();
+                    const phoneOk = phoneVal !== '' && validatePhone(phoneVal);
+                    showError('group-phone', 'error-phone', !phoneOk);
+                    return phoneOk;
+                case 'email':
+                    const emailVal = emailInput.value.trim();
+                    const emailOk = emailVal !== '' && validateEmail(emailVal);
+                    showError('group-email', 'error-email', !emailOk);
+                    return emailOk;
+                case 'username':
+                    const userVal = usernameInput.value.trim();
+                    const userOk = userVal !== '' && validateUsername(userVal);
+                    showError('group-username', 'error-username', !userOk);
+                    return userOk;
+                case 'password':
+                    const pwdVal = passwordInput.value;
+                    const pwdOk = pwdVal !== '' && validatePassword(pwdVal);
+                    showError('group-password', 'error-password', !pwdOk);
+                    if (confirmInput.value.length > 0) validateField('confirmPwd');
+                    return pwdOk;
+                case 'confirmPwd':
+                    const pwd = passwordInput.value;
+                    const confirm = confirmInput.value;
+                    const matchOk = (pwd === confirm) && pwd !== '';
+                    showError('group-confirm', 'error-confirm', !matchOk);
+                    return matchOk;
+                default: return true;
+            }
+        }
+
+        nameInput.addEventListener('blur', () => validateField('fullname'));
+        addressInput.addEventListener('blur', () => validateField('address'));
+        phoneInput.addEventListener('blur', () => validateField('phone'));
+        emailInput.addEventListener('blur', () => validateField('email'));
+        usernameInput.addEventListener('blur', () => validateField('username'));
+        passwordInput.addEventListener('blur', () => validateField('password'));
+        confirmInput.addEventListener('blur', () => validateField('confirmPwd'));
+
+        function validateAll() {
+            return validateField('fullname') && validateField('address') && validateField('phone') &&
+                   validateField('email') && validateField('username') && validateField('password') && validateField('confirmPwd');
+        }
+
+        form.addEventListener('submit', (e) => {
+            if (!validateAll()) {
+                e.preventDefault();
+                const hint = document.createElement('div');
+                hint.innerText = 'Please fix the errors above';
+                hint.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#b13e3e; color:white; padding:8px 20px; border-radius:40px; font-size:0.8rem; z-index:10000;';
+                document.body.appendChild(hint);
+                setTimeout(() => hint.remove(), 2000);
             }
         });
 
@@ -810,12 +797,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             requestAnimationFrame(ambientGlow);
         }
         ambientGlow();
-
-        <? php if (!empty($success_message)): ?>
-            setTimeout(function () {
-                window.location.href = "seller.php";
-            }, 2000);
-        <? php endif; ?>
     </script>
 </body>
 
