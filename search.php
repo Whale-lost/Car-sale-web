@@ -3,7 +3,7 @@ require_once 'db_connection.php';
 
 $model = isset($_GET['model']) ? trim($_GET['model']) : '';
 $year = isset($_GET['year']) ? intval($_GET['year']) : 0;
-$search_mode = isset($_GET['mode']) ? $_GET['mode'] : 'partial';
+$logic = isset($_GET['logic']) ? $_GET['logic'] : 'or';
 $sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'year_desc';
 
 $results = [];
@@ -11,25 +11,36 @@ $sql = "SELECT c.*, s.name as seller_name FROM cars c JOIN sellers s ON c.seller
 $params = [];
 $types = "";
 
+$model_condition = "";
 if (!empty($model)) {
-    if ($search_mode === 'exact') {
-        $sql .= " AND c.model = ?";
-        $params[] = $model;
-        $types .= "s";
-    } else {
-        $sql .= " AND c.model LIKE ?";
-        $params[] = "%$model%";
-        $types .= "s";
-    }
+    $model_condition = "c.model LIKE ?";
+    $params[] = "%$model%";
+    $types .= "s";
 }
-if ($year > 0 && $year >= 1900 && $year <= date('Y')+5) {
-    $sql .= " AND c.year = ?";
+
+$year_valid = ($year > 0 && $year >= 1900 && $year <= date('Y')+5);
+$year_condition = "";
+if ($year_valid) {
+    $year_condition = "c.year = ?";
     $params[] = $year;
     $types .= "i";
-} elseif ($year > 0 && ($year < 1900 || $year > date('Y')+5)) {
+} elseif ($year > 0 && !$year_valid) {
     $invalid_year = true;
 }
 
+if (!empty($model_condition) && !empty($year_condition)) {
+    if ($logic === 'and') {
+        $sql .= " AND $model_condition AND $year_condition";
+    } else { 
+        $sql .= " AND ($model_condition OR $year_condition)";
+    }
+} elseif (!empty($model_condition)) {
+    $sql .= " AND $model_condition";
+} elseif (!empty($year_condition)) {
+    $sql .= " AND $year_condition";
+}
+
+// Sorting
 switch ($sort_by) {
     case 'year_asc':
         $sql .= " ORDER BY c.year ASC";
@@ -508,13 +519,12 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
             <div class="glass-search-card">
                 <div class="search-header">
                     <h2>Find Your Electric Drive</h2>
-                    <p>Search by model or year — discover premium pre-owned EVs</p>
+                    <p>Search by model (partial match) and year — discover premium pre-owned EVs</p>
                 </div>
                 <form method="GET" action="search.php" class="search-form" id="searchForm">
                     <div class="search-input-group">
-                        <label>Model</label>
-                        <input type="text" name="model" placeholder="e.g., Tesla Model 3"
-                            value="<?php echo htmlspecialchars($model); ?>" autocomplete="off">
+                        <label>Model (contains text)</label>
+                        <input type="text" name="model" placeholder="e.g., Tesla" value="<?php echo htmlspecialchars($model); ?>" autocomplete="off">
                     </div>
                     <div class="search-input-group">
                         <label>Year (1900-<?php echo date('Y')+5; ?>)</label>
@@ -522,10 +532,10 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
                             value="<?php echo $year > 0 ? $year : ''; ?>" min="1900" max="<?php echo date('Y')+5; ?>">
                     </div>
                     <div class="search-input-group">
-                        <label>Search Mode</label>
-                        <select name="mode">
-                            <option value="partial" <?php echo $search_mode === 'partial' ? 'selected' : ''; ?>>Partial Match (contains text)</option>
-                            <option value="exact" <?php echo $search_mode === 'exact' ? 'selected' : ''; ?>>Exact Match</option>
+                        <label>Search Logic</label>
+                        <select name="logic">
+                            <option value="or" <?php echo $logic === 'or' ? 'selected' : ''; ?>>Conditional Search (Model OR Year)</option>
+                            <option value="and" <?php echo $logic === 'and' ? 'selected' : ''; ?>>Absolute Search (Model AND Year)</option>
                         </select>
                     </div>
                     <div class="search-input-group">
@@ -542,7 +552,7 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
 
                 <div class="results-grid">
                     <?php if (isset($invalid_year) && $invalid_year): ?>
-                        <div class="no-results" style="grid-column: 1/-1;">⚠️ Invalid year entered. Year must be between 1900 and <?php echo date('Y')+5; ?>.</div>
+                        <div class="no-results" style="grid-column: 1/-1;"> Invalid year entered. Year must be between 1900 and <?php echo date('Y')+5; ?>.</div>
                     <?php elseif (count($results) > 0): ?>
                         <?php foreach ($results as $car): ?>
                         <div class="car-card">
@@ -562,9 +572,9 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
                         </div>
                         <?php endforeach; ?>
                     <?php elseif (!empty($model) || $year > 0): ?>
-                        <div class="no-results" style="grid-column: 1/-1;">😞 No cars found matching your criteria. Try a different model or year.</div>
+                        <div class="no-results" style="grid-column: 1/-1;"> No cars found matching your criteria. Try a different model or year.</div>
                     <?php else: ?>
-                        <div class="no-results" style="grid-column: 1/-1;">🔍 Enter a model or year above to start searching.</div>
+                        <div class="no-results" style="grid-column: 1/-1;"> Enter a model or year above to start searching.</div>
                     <?php endif; ?>
                 </div>
             </div>
