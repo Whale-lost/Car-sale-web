@@ -16,7 +16,7 @@ if (!empty($model)) {
         $sql .= " AND c.model = ?";
         $params[] = $model;
         $types .= "s";
-    } else { // partial match
+    } else {
         $sql .= " AND c.model LIKE ?";
         $params[] = "%$model%";
         $types .= "s";
@@ -524,7 +524,7 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
                     <div class="search-input-group">
                         <label>Search Mode</label>
                         <select name="mode">
-                            <option value="partial" <?php echo $search_mode === 'partial' ? 'selected' : ''; ?>>Partial Match (Fuzzy)</option>
+                            <option value="partial" <?php echo $search_mode === 'partial' ? 'selected' : ''; ?>>Partial Match (contains text)</option>
                             <option value="exact" <?php echo $search_mode === 'exact' ? 'selected' : ''; ?>>Exact Match</option>
                         </select>
                     </div>
@@ -542,7 +542,7 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
 
                 <div class="results-grid">
                     <?php if (isset($invalid_year) && $invalid_year): ?>
-                        <div class="no-results" style="grid-column: 1/-1;">Invalid year entered. Year must be between 1900 and <?php echo date('Y')+5; ?>.</div>
+                        <div class="no-results" style="grid-column: 1/-1;">⚠️ Invalid year entered. Year must be between 1900 and <?php echo date('Y')+5; ?>.</div>
                     <?php elseif (count($results) > 0): ?>
                         <?php foreach ($results as $car): ?>
                         <div class="car-card">
