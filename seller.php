@@ -1,3 +1,21 @@
+<?php
+session_start();
+if (!isset($_SESSION['seller_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+require_once 'db_connection.php';
+
+$seller_id = $_SESSION['seller_id'];
+$username = $_SESSION['username'];
+
+$stmt = $conn->prepare("SELECT * FROM cars WHERE seller_id = ? ORDER BY add_date DESC");
+$stmt->bind_param("i", $seller_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$my_cars = $result->fetch_all(MYSQLI_ASSOC);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -133,36 +151,6 @@
             flex-wrap: wrap;
         }
 
-        .nav-link {
-            text-decoration: none;
-            font-weight: 600;
-            color: #174f6b;
-            transition: all 0.25s;
-            padding: 8px 6px;
-            font-size: 1rem;
-            position: relative;
-        }
-
-        .nav-link:after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0%;
-            height: 2px;
-            background: linear-gradient(90deg, #b8d0ff, #a9c6ff);
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover:after {
-            width: 100%;
-        }
-
-        .nav-link:hover {
-            color: #1a5a82;
-            transform: translateY(-1px);
-        }
-
         .btn {
             display: inline-block;
             padding: 12px 28px;
@@ -204,6 +192,16 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(169, 198, 255, 0.3);
             color: #10435e;
+        }
+
+        .logout-btn {
+            background: rgba(169, 198, 255, 0.15);
+            border: 1px solid #a9c6ff;
+            color: #1b5472;
+        }
+
+        .logout-btn:hover {
+            background: rgba(169, 198, 255, 0.3);
         }
 
         .jump-cards {
@@ -310,10 +308,12 @@
             padding: 24px;
         }
 
-        .zigzag-img svg {
+        .zigzag-img img {
             width: 100%;
             max-width: 200px;
             height: auto;
+            border-radius: 24px;
+            object-fit: cover;
         }
 
         .zigzag-content {
@@ -362,17 +362,15 @@
             flex-direction: row-reverse;
         }
 
-        .logout-btn {
-            margin-left: 12px;
-            background: rgba(169, 198, 255, 0.2);
-            border-color: #a9c6ff;
-            color: #1b5472;
-        }
-
-        .logout-btn:hover {
-            background: rgba(169, 198, 255, 0.4);
-            border-color: #3b82f6;
-            color: #0f344c;
+        .success-message {
+            text-align: center;
+            background: rgba(100, 200, 100, 0.15);
+            color: #2c6e2c;
+            border: 1px solid #8bc88b;
+            border-radius: 40px;
+            padding: 12px;
+            margin: 20px auto;
+            max-width: 600px;
         }
 
         /* Footer */
@@ -471,7 +469,7 @@
                 cursor: auto;
             }
 
-            .zigzag-img svg {
+            .zigzag-img img {
                 max-width: 140px;
             }
         }
@@ -529,32 +527,84 @@
                     </div>
                 </div>
                 <div class="nav-links">
-                    <a href="#" class="nav-link" id="demoHomeLink">Home</a>
-                    <a href="#" class="nav-link" id="demoSellerLink">Sellers</a>
-                    <a href="#" class="nav-link" id="demoSearchLink">Search</a>
-                    <a href="#" class="nav-link">Inventory</a>
-                    <button class="btn btn-outline logout-btn" id="logoutBtn">Logout →</button>
+                    <a href="logout.php" class="btn btn-outline logout-btn">Logout →</a>
                 </div>
             </nav>
 
+            <?php if (isset($_GET['msg'])): ?>
+            <div class="success-message">
+                <?php echo htmlspecialchars($_GET['msg']); ?>
+            </div>
+            <?php endif; ?>
+
             <div class="jump-cards">
                 <div class="jump-card" id="searchJumpCard">
-                    <div class="welcome-badge">Seller Dashboard</div>
+                    <div class="welcome-badge">Seller Dashboard · Hello
+                        <?php echo htmlspecialchars($username); ?>
+                    </div>
                     <h2>Explore Full Inventory</h2>
                     <p>Search thousands of premium electric vehicles, filter by model, year, price and more.</p>
-                    <button class="btn btn-primary jump-btn" id="searchJumpBtn">Go to Search →</button>
+                    <a href="search.php" class="btn btn-primary jump-btn">Go to Search →</a>
                 </div>
 
                 <div class="jump-card" id="addCarJumpCard">
                     <h2>List Your Vehicle</h2>
                     <p>Add a new EV to your seller portfolio. Reach eco-conscious buyers instantly.</p>
-                    <button class="btn btn-primary jump-btn" id="addCarJumpBtn">Add Car →</button>
+                    <a href="addcar.php" class="btn btn-primary jump-btn">Add Car →</a>
                 </div>
             </div>
 
             <div class="zigzag-section">
-                <h2 class="section-title">Your Featured Listings</h2>
+                <h2 class="section-title">Your Listed Cars</h2>
                 <div class="zigzag-container" id="zigzagContainer">
+                    <?php if (count($my_cars) > 0): ?>
+                    <?php foreach ($my_cars as $index => $car): ?>
+                    <div class="zigzag-item" data-id="<?php echo $car['car_id']; ?>">
+                        <div class="zigzag-img">
+                            <?php if (!empty($car['image']) && file_exists($car['image'])): ?>
+                            <img src="<?php echo htmlspecialchars($car['image']); ?>"
+                                alt="<?php echo htmlspecialchars($car['model']); ?>">
+                            <?php else: ?>
+                            <svg width="200" height="130" viewBox="0 0 200 100" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <rect x="10" y="30" width="160" height="45" rx="12" fill="#CEE9FF" stroke="#a9c6ff"
+                                    stroke-width="1.5" />
+                                <circle cx="45" cy="68" r="14" fill="#1F4E6F" stroke="#2c7da0" />
+                                <circle cx="145" cy="68" r="14" fill="#1F4E6F" stroke="#2c7da0" />
+                                <path d="M40 25 L90 18 L130 25 L155 38 L35 38 L40 25Z" fill="#A0CDE6" />
+                            </svg>
+                            <?php endif; ?>
+                        </div>
+                        <div class="zigzag-content">
+                            <h3>
+                                <?php echo htmlspecialchars($car['model']); ?>
+                            </h3>
+                            <div class="car-meta">
+                                <span>
+                                    <?php echo htmlspecialchars($car['location']); ?>
+                                </span>
+                                <span>
+                                    <?php echo $car['year']; ?>
+                                </span>
+                                <span>
+                                    <?php echo htmlspecialchars($car['colour']); ?>
+                                </span>
+                            </div>
+                            <div class="car-price">$
+                                <?php echo number_format($car['price'], 2); ?>
+                            </div>
+                            <a href="#" class="view-details" data-id="<?php echo $car['car_id']; ?>">View details →</a>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                    <?php else: ?>
+                    <div
+                        style="text-align: center; padding: 60px; background: rgba(255,255,255,0.7); border-radius: 48px;">
+                        <p style="font-size: 1.2rem; color: #3d7897;">You haven't listed any cars yet.</p>
+                        <p style="margin-top: 16px;"><a href="addcar.php" class="btn btn-primary">List Your First Car
+                                →</a></p>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -570,15 +620,14 @@
                     <div class="footer-links">
                         <div class="footer-col">
                             <strong>Explore</strong>
-                            <a href="#" id="footerHomeDemo">Home</a>
-                            <a href="#" id="footerSellerDemo">Sellers Hub</a>
-                            <a href="#" id="footerSearchDemo">Search Cars</a>
+                            <a href="home.php">Home</a>
+                            <a href="search.php">Search Cars</a>
+                            <a href="addcar.php">Sell Your Car</a>
                         </div>
                         <div class="footer-col">
-                            <strong>Support</strong>
-                            <a href="#">FAQ</a>
-                            <a href="#">Warranty</a>
-                            <a href="#">Contact</a>
+                            <strong>Account</strong>
+                            <a href="login.php">Login</a>
+                            <a href="registration.php">Register</a>
                         </div>
                     </div>
                 </div>
@@ -590,188 +639,6 @@
     </main>
 
     <script>
-        const sellerCars = [
-            {
-                id: 1,
-                model: "Tesla Model 3 Long Range",
-                year: 2023,
-                colour: "Midnight Silver Metallic",
-                price: "$42,990",
-                mileage: "12,400 mi",
-                location: "San Francisco, CA",
-                imageType: "tesla"
-            },
-            {
-                id: 2,
-                model: "Hyundai Ioniq 5 Limited",
-                year: 2023,
-                colour: "Digital Teal",
-                price: "$48,200",
-                mileage: "8,750 mi",
-                location: "Los Angeles, CA",
-                imageType: "ioniq"
-            },
-            {
-                id: 3,
-                model: "Ford Mustang Mach-E GT",
-                year: 2022,
-                colour: "Vapor Blue",
-                price: "$56,500",
-                mileage: "15,200 mi",
-                location: "Austin, TX",
-                imageType: "machE"
-            },
-            {
-                id: 4,
-                model: "Polestar 2 Dual Motor",
-                year: 2023,
-                colour: "Magnesium",
-                price: "$46,700",
-                mileage: "5,300 mi",
-                location: "Seattle, WA",
-                imageType: "polestar"
-            }
-        ];
-
-        function renderZigzag() {
-            const container = document.getElementById('zigzagContainer');
-            if (!container) return;
-            let html = '';
-            sellerCars.forEach((car, idx) => {
-                const svgContent = `
-                <svg width="200" height="130" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="10" y="30" width="160" height="45" rx="12" fill="#CEE9FF" stroke="#a9c6ff" stroke-width="1.5"/>
-                    <circle cx="45" cy="68" r="14" fill="#1F4E6F" stroke="#2c7da0"/>
-                    <circle cx="145" cy="68" r="14" fill="#1F4E6F" stroke="#2c7da0"/>
-                    <path d="M40 25 L90 18 L130 25 L155 38 L35 38 L40 25Z" fill="#A0CDE6"/>
-                </svg>
-                `;
-                html += `
-                <div class="zigzag-item" data-id="${car.id}">
-                    <div class="zigzag-img">
-                        ${svgContent}
-                    </div>
-                    <div class="zigzag-content">
-                        <h3>${car.model}</h3>
-                        <div class="car-meta">
-                            <span>📍 ${car.location}</span>
-                            <span>📅 ${car.year}</span>
-                            <span>🎨 ${car.colour}</span>
-                            <span>🔋 ${car.mileage}</span>
-                        </div>
-                        <div class="car-price">${car.price}</div>
-                        <a href="#" class="view-details" data-id="${car.id}">View details →</a>
-                    </div>
-                </div>
-                `;
-            });
-            container.innerHTML = html;
-
-            document.querySelectorAll('.view-details').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const id = link.getAttribute('data-id');
-                    const car = sellerCars.find(c => c.id == id);
-                    showDemoMessage(`Showing details for ${car.model} (Demo preview)`);
-                });
-            });
-            document.querySelectorAll('.zigzag-item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    if (e.target.classList && e.target.classList.contains('view-details')) return;
-                    const id = item.getAttribute('data-id');
-                    const car = sellerCars.find(c => c.id == id);
-                    if (car) showDemoMessage(`${car.model} — Full details available soon.`);
-                });
-            });
-        }
-
-        function showDemoMessage(msg, isError = false) {
-            const toast = document.createElement('div');
-            toast.innerText = msg;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '24px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = isError ? '#7f1a1a' : '#0E2F3B';
-            toast.style.color = '#E3F2F9';
-            toast.style.padding = '12px 28px';
-            toast.style.borderRadius = '60px';
-            toast.style.fontSize = '0.85rem';
-            toast.style.fontWeight = '500';
-            toast.style.zIndex = '10000';
-            toast.style.backdropFilter = 'blur(12px)';
-            toast.style.background = isError ? 'rgba(180, 50, 50, 0.92)' : 'rgba(10,30,45,0.96)';
-            toast.style.border = `1px solid ${isError ? '#f87171' : '#a9c6ff'}`;
-            toast.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
-            toast.style.fontFamily = "'Inter', system-ui, sans-serif";
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 500);
-            }, 2500);
-        }
-
-        const searchJumpBtn = document.getElementById('searchJumpBtn');
-        const searchCard = document.getElementById('searchJumpCard');
-        if (searchJumpBtn) {
-            searchJumpBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showDemoMessage('Redirecting to full vehicle search page (Demo)');
-            });
-        }
-        if (searchCard) {
-            searchCard.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON') return;
-                showDemoMessage('Discover thousands of electric vehicles - Search page (Demo)');
-            });
-        }
-
-        const addCarJumpBtn = document.getElementById('addCarJumpBtn');
-        const addCarCard = document.getElementById('addCarJumpCard');
-        if (addCarJumpBtn) {
-            addCarJumpBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showDemoMessage('Redirecting to Add Car page - List your EV (Demo)');
-            });
-        }
-        if (addCarCard) {
-            addCarCard.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON') return;
-                showDemoMessage('Start listing your electric vehicle (Demo)');
-            });
-        }
-
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                showDemoMessage('You have been logged out. Redirecting to login page (Demo)');
-            });
-        }
-
-
-        const demoHome = document.querySelectorAll('#demoHomeLink, #footerHomeDemo');
-        const demoSeller = document.querySelectorAll('#demoSellerLink, #footerSellerDemo');
-        const demoSearch = document.querySelectorAll('#demoSearchLink, #footerSearchDemo');
-        demoHome.forEach(link => {
-            if (link) link.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('VanCar Homepage (Demo)'); });
-        });
-        demoSeller.forEach(link => {
-            if (link) link.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Seller Hub — Manage inventory (Demo)'); });
-        });
-        demoSearch.forEach(link => {
-            if (link) link.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Advanced Search — Find your perfect EV (Demo)'); });
-        });
-        const inventoryLink = document.querySelector('.nav-link:last-child');
-        if (inventoryLink && inventoryLink.innerText === 'Inventory') {
-            inventoryLink.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Complete EV Inventory (Demo)'); });
-        }
-
-        const supportLinks = document.querySelectorAll('.footer-col a:not(#footerHomeDemo):not(#footerSellerDemo):not(#footerSearchDemo)');
-        supportLinks.forEach(link => {
-            link.addEventListener('click', (e) => { e.preventDefault(); showDemoMessage('Support / Legal information (Demo)'); });
-        });
-
         const cursor = document.getElementById('cursorFollower');
         if (cursor) {
             let mouseX = 0, mouseY = 0;
@@ -789,7 +656,7 @@
             }
             animateCursor();
 
-            const interactiveElements = document.querySelectorAll('a, button, .btn, .nav-link, .zigzag-item, .jump-card');
+            const interactiveElements = document.querySelectorAll('a, button, .btn, .zigzag-item, .jump-card');
             interactiveElements.forEach(el => {
                 el.addEventListener('mouseenter', () => {
                     cursor.style.transform = 'translate(-50%, -50%) scale(1.35)';
@@ -814,8 +681,14 @@
         }
         ambientGlow();
 
-        // 初始化渲染Z字形车辆
-        renderZigzag();
+        const viewDetailsLinks = document.querySelectorAll('.view-details');
+        viewDetailsLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const carId = link.getAttribute('data-id');
+                alert("Car details (ID: " + carId + ") – Full info coming soon.");
+            });
+        });
     </script>
 </body>
 
