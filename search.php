@@ -1,9 +1,10 @@
 <?php
-
 require_once 'db_connection.php';
 
 $model = isset($_GET['model']) ? trim($_GET['model']) : '';
 $year = isset($_GET['year']) ? intval($_GET['year']) : 0;
+$search_mode = isset($_GET['mode']) ? $_GET['mode'] : 'partial';
+$sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'year_desc';
 
 $results = [];
 $sql = "SELECT c.*, s.name as seller_name FROM cars c JOIN sellers s ON c.seller_id = s.seller_id WHERE 1=1";
@@ -11,16 +12,38 @@ $params = [];
 $types = "";
 
 if (!empty($model)) {
-    $sql .= " AND c.model LIKE ?";
-    $params[] = "%$model%";
-    $types .= "s";
+    if ($search_mode === 'exact') {
+        $sql .= " AND c.model = ?";
+        $params[] = $model;
+        $types .= "s";
+    } else { // partial match
+        $sql .= " AND c.model LIKE ?";
+        $params[] = "%$model%";
+        $types .= "s";
+    }
 }
-if ($year > 0) {
+if ($year > 0 && $year >= 1900 && $year <= date('Y')+5) {
     $sql .= " AND c.year = ?";
     $params[] = $year;
     $types .= "i";
+} elseif ($year > 0 && ($year < 1900 || $year > date('Y')+5)) {
+    $invalid_year = true;
 }
-$sql .= " ORDER BY c.add_date DESC";
+
+switch ($sort_by) {
+    case 'year_asc':
+        $sql .= " ORDER BY c.year ASC";
+        break;
+    case 'price_asc':
+        $sql .= " ORDER BY c.price ASC";
+        break;
+    case 'price_desc':
+        $sql .= " ORDER BY c.price DESC";
+        break;
+    default:
+        $sql .= " ORDER BY c.year DESC";
+        break;
+}
 
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
@@ -49,7 +72,8 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
         a,
         button,
         input,
-        .btn {
+        .btn,
+        select {
             cursor: none;
         }
 
@@ -260,21 +284,31 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
 
         .search-form {
             display: flex;
-            gap: 20px;
             flex-wrap: wrap;
+            gap: 16px;
             justify-content: center;
             margin-bottom: 40px;
+            align-items: flex-end;
         }
 
         .search-input-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 160px;
         }
 
-        .search-input-group input {
+        .search-input-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: #3d7897;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .search-input-group input,
+        .search-input-group select {
             width: 100%;
-            padding: 14px 20px;
-            font-size: 1rem;
+            padding: 12px 16px;
+            font-size: 0.9rem;
             background: #ffffff;
             border: 1px solid rgba(169, 198, 255, 0.8);
             border-radius: 48px;
@@ -283,22 +317,18 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
             font-family: inherit;
         }
 
-        .search-input-group input:focus {
+        .search-input-group input:focus,
+        .search-input-group select:focus {
             border-color: #a9c6ff;
-            background: #ffffff;
             box-shadow: 0 0 0 3px rgba(169, 198, 255, 0.3);
         }
 
-        .search-input-group input::placeholder {
-            color: #94aec7;
-        }
-
         .search-btn {
-            padding: 14px 32px;
-            border-radius: 48px;
+            padding: 12px 28px;
+            margin-top: 0;
+            align-self: center;
         }
 
-        /* Results grid (replaces original list+detail) */
         .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -358,7 +388,6 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
             font-size: 1.1rem;
         }
 
-        /* Footer */
         .footer {
             background: #0e2f3b;
             color: #d9ecf2;
@@ -427,11 +456,9 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
             .glass-search-card {
                 padding: 24px 20px;
             }
-
             .container {
                 padding: 0 20px;
             }
-
             .navbar {
                 flex-direction: column;
             }
@@ -441,11 +468,7 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
             .cursor-follower {
                 display: none;
             }
-
-            body,
-            a,
-            button,
-            input {
+            body, a, button, input, select {
                 cursor: auto;
             }
         }
@@ -487,53 +510,61 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
                     <h2>Find Your Electric Drive</h2>
                     <p>Search by model or year — discover premium pre-owned EVs</p>
                 </div>
-                <form method="GET" action="search.php" class="search-form">
+                <form method="GET" action="search.php" class="search-form" id="searchForm">
                     <div class="search-input-group">
-                        <input type="text" name="model" placeholder="Model (e.g., Tesla Model 3)"
+                        <label>Model</label>
+                        <input type="text" name="model" placeholder="e.g., Tesla Model 3"
                             value="<?php echo htmlspecialchars($model); ?>" autocomplete="off">
                     </div>
                     <div class="search-input-group">
-                        <input type="number" name="year" placeholder="Year (e.g., 2022)"
-                            value="<?php echo $year > 0 ? $year : ''; ?>" autocomplete="off">
+                        <label>Year (1900-<?php echo date('Y')+5; ?>)</label>
+                        <input type="number" name="year" placeholder="e.g., 2022"
+                            value="<?php echo $year > 0 ? $year : ''; ?>" min="1900" max="<?php echo date('Y')+5; ?>">
+                    </div>
+                    <div class="search-input-group">
+                        <label>Search Mode</label>
+                        <select name="mode">
+                            <option value="partial" <?php echo $search_mode === 'partial' ? 'selected' : ''; ?>>Partial Match (Fuzzy)</option>
+                            <option value="exact" <?php echo $search_mode === 'exact' ? 'selected' : ''; ?>>Exact Match</option>
+                        </select>
+                    </div>
+                    <div class="search-input-group">
+                        <label>Sort By</label>
+                        <select name="sort">
+                            <option value="year_desc" <?php echo $sort_by === 'year_desc' ? 'selected' : ''; ?>>Year (Newest First)</option>
+                            <option value="year_asc" <?php echo $sort_by === 'year_asc' ? 'selected' : ''; ?>>Year (Oldest First)</option>
+                            <option value="price_desc" <?php echo $sort_by === 'price_desc' ? 'selected' : ''; ?>>Price (High to Low)</option>
+                            <option value="price_asc" <?php echo $sort_by === 'price_asc' ? 'selected' : ''; ?>>Price (Low to High)</option>
+                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary search-btn">Search →</button>
                 </form>
 
                 <div class="results-grid">
-                    <?php if (count($results) > 0): ?>
-                    <?php foreach ($results as $car): ?>
-                    <div class="car-card">
-                        <?php if (!empty($car['image']) && file_exists($car['image'])): ?>
-                        <img src="<?php echo htmlspecialchars($car['image']); ?>"
-                            alt="<?php echo htmlspecialchars($car['model']); ?>">
-                        <?php else: ?>
-                        <img src="uploads/placeholder.jpg" alt="Car Image" style="background: #d9ecf5;">
-                        <?php endif; ?>
-                        <h3>
-                            <?php echo htmlspecialchars($car['model']); ?>
-                        </h3>
-                        <div class="car-details">
-                            <span>
-                                <?php echo $car['year']; ?>
-                            </span>
-                            <span>
-                                <?php echo htmlspecialchars($car['colour']); ?>
-                            </span>
-                            <span>
-                                <?php echo htmlspecialchars($car['location']); ?>
-                            </span>
+                    <?php if (isset($invalid_year) && $invalid_year): ?>
+                        <div class="no-results" style="grid-column: 1/-1;">Invalid year entered. Year must be between 1900 and <?php echo date('Y')+5; ?>.</div>
+                    <?php elseif (count($results) > 0): ?>
+                        <?php foreach ($results as $car): ?>
+                        <div class="car-card">
+                            <?php if (!empty($car['image']) && file_exists($car['image'])): ?>
+                            <img src="<?php echo htmlspecialchars($car['image']); ?>" alt="<?php echo htmlspecialchars($car['model']); ?>">
+                            <?php else: ?>
+                            <img src="uploads/placeholder.jpg" alt="Car Image" style="background: #d9ecf5;">
+                            <?php endif; ?>
+                            <h3><?php echo htmlspecialchars($car['model']); ?></h3>
+                            <div class="car-details">
+                                <span><?php echo $car['year']; ?></span>
+                                <span><?php echo htmlspecialchars($car['colour']); ?></span>
+                                <span><?php echo htmlspecialchars($car['location']); ?></span>
+                            </div>
+                            <div class="price">$<?php echo number_format($car['price'], 2); ?></div>
+                            <p style="font-size:0.8rem; color:#3a7897;">Seller: <?php echo htmlspecialchars($car['seller_name']); ?></p>
                         </div>
-                        <div class="price">$
-                            <?php echo number_format($car['price'], 2); ?>
-                        </div>
-                        <p style="font-size:0.8rem; color:#3a7897;">Seller:
-                            <?php echo htmlspecialchars($car['seller_name']); ?>
-                        </p>
-                    </div>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    <?php elseif (!empty($model) || $year > 0): ?>
+                        <div class="no-results" style="grid-column: 1/-1;">😞 No cars found matching your criteria. Try a different model or year.</div>
                     <?php else: ?>
-                    <div class="no-results" style="grid-column: 1/-1;">No cars found. Try a different model or year.
-                    </div>
+                        <div class="no-results" style="grid-column: 1/-1;">🔍 Enter a model or year above to start searching.</div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -584,7 +615,7 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
                 requestAnimationFrame(animateCursor);
             }
             animateCursor();
-            const interactive = document.querySelectorAll('a, button, .car-card, .btn, .nav-link');
+            const interactive = document.querySelectorAll('a, button, .car-card, .btn, .nav-link, select, input');
             interactive.forEach(el => {
                 el.addEventListener('mouseenter', () => {
                     cursor.style.transform = 'translate(-50%, -50%) scale(1.35)';
