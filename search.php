@@ -1,9 +1,7 @@
 <?php
-// search.php - Buyer search with real database query
 
 require_once 'db_connection.php';
 
-// Retrieve search parameters
 $model = isset($_GET['model']) ? trim($_GET['model']) : '';
 $year = isset($_GET['year']) ? intval($_GET['year']) : 0;
 
@@ -477,7 +475,6 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
                     </div>
                 </div>
                 <div class="nav-links">
-                    <!-- Only Seller and Add Car -->
                     <a href="seller.php" class="nav-link">Seller</a>
                     <a href="addcar.php" class="nav-link">Add Car</a>
                 </div>
@@ -571,7 +568,6 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
     </main>
 
     <script>
-        // Mouse follower (unchanged from search.html)
         const cursor = document.getElementById('cursorFollower');
         if (cursor) {
             let mouseX = 0, mouseY = 0;
@@ -603,7 +599,6 @@ $results = $result_obj->fetch_all(MYSQLI_ASSOC);
             });
         }
 
-        // Ambient background animation (same as search.html)
         let lightShift = 0;
         function ambientGlow() {
             lightShift += 0.003;
